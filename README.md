@@ -1,6 +1,6 @@
 # Land Cover Classification API
 
-This project is a FastAPI-based web application that allows users to upload a `.tiff` image, select a classification method, and receive a classified land cover map. It utilizes pre-trained models and a UI that allows users to select a rectangular Region of Interest (ROI) for classification.
+This project is a FastAPI-based web application that allows users to upload a any .shp or .geojson format of any admisnstrative area or `.tiff` image with all 12 bands of Sentinel-2 to get a LULC classification aroind the world. It utilizes pre-trained models and a UI also allows users to select a rectangular Region of Interest (ROI) for classification, batch classification for different areas, LULC temporal change dynamics,class probability too on fly without knowing any programming language.
 
 ## Prerequisites
 
