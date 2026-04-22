@@ -1,0 +1,77 @@
+{
+  "location": "Siddipet",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 12348,
+  "no_change_pixels": 11985,
+  "no_change_percent": 97.06025267249757,
+  "urban_expansion_pixels": 38,
+  "urban_expansion_area_km2": 0.0342,
+  "urban_expansion_percent": 0.30774214447683834,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 133,
+      "percent": 1.0770975056689343
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 104,
+      "percent": 0.8422416585681892
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 40,
+      "percent": 0.32393909944930355
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 37,
+      "percent": 0.29964366699060574
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 25,
+      "percent": 0.2024619371558147
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 17,
+      "percent": 0.137674117265954
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 3,
+      "percent": 0.024295432458697766
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 2,
+      "percent": 0.016196954972465177
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 1,
+      "percent": 0.008098477486232589
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 1,
+      "percent": 0.008098477486232589
+    }
+  ]
+}

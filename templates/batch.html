@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch LULC Classification - Bhugyaan API</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <style>
+    body { background-color: #003366; color: white; font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
+    h1, h2 { margin: 10px; }
+    .nav { margin: 14px 0; }
+    .nav a { color: #b3d7ff; text-decoration: none; font-size: 16px; }
+    .nav a:hover { text-decoration: underline; }
+    .form-container { margin: 18px auto; padding: 15px; background: #f9f9f9; border-radius: 8px; width: 90%; max-width: 520px; color: black; text-align: left; }
+    label { font-weight: bold; }
+    input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    .btn { padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; }
+    .btn:hover { background-color: #1e7e34; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; }
+    th { background: rgba(255,255,255,0.15); }
+    a.link { color: #7ec8ff; text-decoration: none; }
+    a.link:hover { text-decoration: underline; }
+    .error { max-width: 800px; margin: 15px auto; background: rgba(255,0,0,0.12); border: 1px solid rgba(255,0,0,0.35); padding: 10px 12px; border-radius: 8px; }
+    .progress-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .progress-card { width: 90%; max-width: 420px; background: #ffffff; color: #111; border-radius: 10px; padding: 18px 18px 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); text-align:left;}
+    .progress-card h3 { margin: 0 0 10px 0; font-size: 18px; }
+    .progress-bar-track { width: 100%; height: 8px; border-radius: 999px; background: #e0e0e0; overflow: hidden; margin: 6px 0 10px 0; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#007bff,#00c9ff); transition: width 0.4s ease; }
+    .progress-steps { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+    .progress-steps li { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #555; }
+    .progress-step-dot { width: 8px; height: 8px; border-radius: 999px; background: #c4c4c4; }
+    .progress-step-active .progress-step-dot { background: #007bff; }
+    .progress-step-active span { font-weight: 600; color: #111; }
+    .progress-step-done .progress-step-dot { background: #28a745; }
+    .progress-step-done span { color: #2e7d32; }
+  </style>
+</head>
+<body>
+  <h1>Batch LULC Classification</h1>
+  <div class="nav">
+    <a href="/">← Back to Home</a>
+  </div>
+
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 10px 20px 10px;">
+    <h2>1. Draw or upload multiple AOIs</h2>
+    <p style="margin:6px 0 10px 0; font-size:13px; color:#ddd;">
+      You can draw multiple AOIs on the map below or upload a GeoJSON FeatureCollection. Each AOI will be classified in one batch.
+    </p>
+    <div class="location-search" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:10px auto; max-width:500px;">
+      <input type="text" id="locationSearch" placeholder="Search for a place (e.g. Mumbai, Delhi)" style="flex:1; padding:10px 14px; font-size:16px; border:2px solid #007bff; border-radius:6px; color:#333;" />
+      <button type="button" id="locationSearchBtn" style="padding:10px 20px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer;">Go to location</button>
+    </div>
+    <div id="map" style="width:100%; height:420px;"></div>
+  </div>
+
+  <div class="form-container">
+    <h2 style="margin-top:0;">2. Upload AOIs and/or TIFFs and choose settings</h2>
+    <form action="/batch-generate-lulc" method="post" enctype="multipart/form-data">
+      <label for="batch_file">AOIs GeoJSON (Feature/FeatureCollection, optional)</label>
+      <input id="batch_file" name="file" type="file" accept=".geojson" />
+      <p style="margin:4px 0 10px 0; font-size:13px; color:#333;">
+        If omitted, all AOIs drawn on the map will be used. If provided, both drawn AOIs and this file will be processed.
+      </p>
+
+      <input type="hidden" id="batch_geojson" name="geojson" />
+
+      <label for="batch_tiffs">Multiple TIFF files (optional)</label>
+      <input id="batch_tiffs" name="tiff_files" type="file" accept=".tif,.tiff" multiple />
+      <p style="margin:4px 0 10px 0; font-size:13px; color:#333;">
+        All selected TIFFs will be classified with the same date/method below.
+      </p>
+
+      <label for="batch_location_prefix">Location prefix for unnamed AOIs (optional)</label>
+      <input id="batch_location_prefix" name="location_prefix" placeholder="e.g. City" />
+
+      <label for="batch_date">Date for Sentinel-2 (YYYY-MM-DD)</label>
+      <input id="batch_date" name="date" type="date" required />
+
+      <label for="batch_method">Classification method (applied to all)</label>
+      <select id="batch_method" name="method">
+        <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+        <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+        <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+        <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+        <option value="Random-Forest-Random-search">Random Forest (Random Search)</option>
+        <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+        <option value="ANN">Artificial Neural Network</option>
+      </select>
+
+      <label for="batch_scale">Scale (meters per pixel)</label>
+      <input id="batch_scale" name="scale" type="number" value="30" min="10" max="1000" />
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">Run batch classification</button>
+      </div>
+      <p style="margin:6px 0 0 0; font-size:13px; color:#333;">
+        All AOIs (drawn + uploaded) and TIFFs will be processed together when you click this button.
+      </p>
+    </form>
+  </div>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if results %}
+  <div style="max-width: 1000px; margin: 20px auto; padding: 10px;">
+    <h2>Batch results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>AOI</th>
+          <th>Status</th>
+          <th>Classified image</th>
+          <th>Classified TIFF</th>
+          <th>Stats CSV</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.name }}</td>
+          <td>{{ r.status }}</td>
+          <td>
+            {% if r.image_url %}
+            <a class="link" href="/static/{{ r.image_url }}" target="_blank">PNG</a>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.tif_url %}
+            <a class="link" href="/static/{{ r.tif_url }}" download>TIFF</a>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.csv_url %}
+            <a class="link" href="/static/{{ r.csv_url }}" download>CSV</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div id="progressOverlay" class="progress-overlay">
+    <div class="progress-card">
+      <h3>Running batch classification…</h3>
+      <div class="progress-bar-track">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+      <ul class="progress-steps">
+        <li class="progress-step progress-step-active" data-step="0">
+          <span class="progress-step-dot"></span><span>Downloading satellite images</span>
+        </li>
+        <li class="progress-step" data-step="1">
+          <span class="progress-step-dot"></span><span>Processing bands</span>
+        </li>
+        <li class="progress-step" data-step="2">
+          <span class="progress-step-dot"></span><span>Running models</span>
+        </li>
+        <li class="progress-step" data-step="3">
+          <span class="progress-step-dot"></span><span>Generating outputs</span>
+        </li>
+      </ul>
+      <p style="margin-top:8px; font-size:12px; color:#666;">
+        Many AOIs and TIFFs can take some time. You can leave this running and return when results appear.
+      </p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script>
+    var locationSearchMarker = null;
+    var map = L.map('map').setView([20, 77], 5);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 18
+    });
+    osmLayer.addTo(map);
+    L.control.layers({ "OpenStreetMap": osmLayer, "Satellite": satelliteLayer }).addTo(map);
+
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+      edit: { featureGroup: drawnItems },
+      draw: { polygon: true, marker: false, polyline: false, rectangle: true, circle: false, circlemarker: false }
+    });
+    map.addControl(drawControl);
+
+    map.on(L.Draw.Event.CREATED, function(e) {
+      drawnItems.addLayer(e.layer);
+    });
+
+    function goToLocation() {
+      var q = document.getElementById("locationSearch").value.trim();
+      if (!q) { alert("Enter a location."); return; }
+      var btn = document.getElementById("locationSearchBtn");
+      btn.disabled = true;
+      btn.textContent = "Searching...";
+      fetch("https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(q) + "&format=json&limit=1", {
+        headers: { "Accept": "application/json", "User-Agent": "Bhugyaan-LULC-App/1.0" }
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(results) {
+          btn.disabled = false;
+          btn.textContent = "Go to location";
+          if (!results || results.length === 0) { alert("Location not found."); return; }
+          var lat = parseFloat(results[0].lat), lon = parseFloat(results[0].lon);
+          if (locationSearchMarker) map.removeLayer(locationSearchMarker);
+          locationSearchMarker = L.marker([lat, lon]).addTo(map);
+          map.flyTo([lat, lon], 14, { duration: 0.8 });
+        })
+        .catch(function() { btn.disabled = false; btn.textContent = "Go to location"; alert("Search failed."); });
+    }
+    document.getElementById("locationSearchBtn").addEventListener("click", goToLocation);
+    document.getElementById("locationSearch").addEventListener("keydown", function(e) { if (e.key === "Enter") goToLocation(); });
+
+    // Before submitting, pack all drawn AOIs into a FeatureCollection (if any)
+    var batchForm = document.querySelector('form[action="/batch-generate-lulc"]');
+    batchForm.addEventListener('submit', function(e) {
+      var layers = drawnItems.getLayers();
+      if (layers.length > 0) {
+        var features = [];
+        layers.forEach(function(l, idx) {
+          var g = l.toGeoJSON();
+          if (!g.properties) g.properties = {};
+          if (!g.properties.name) g.properties.name = "AOI_drawn_" + (idx + 1);
+          features.push(g);
+        });
+        var fc = { type: "FeatureCollection", features: features };
+        document.getElementById('batch_geojson').value = JSON.stringify(fc);
+      }
+    });
+
+    // Progress overlay for batch classification
+    (function() {
+      var overlay = document.getElementById("progressOverlay");
+      if (!overlay) return;
+      var bar = document.getElementById("progressBarFill");
+      var steps = Array.prototype.slice.call(document.querySelectorAll(".progress-steps .progress-step"));
+      var currentStep = 0;
+      var intervalId = null;
+
+      function setStep(stepIndex) {
+        currentStep = stepIndex;
+        var pct = Math.min(100, (stepIndex + 1) * (100 / steps.length));
+        if (bar) bar.style.width = pct + "%";
+        steps.forEach(function(li, idx) {
+          li.classList.remove("progress-step-active", "progress-step-done");
+          if (idx < stepIndex) li.classList.add("progress-step-done");
+          else if (idx === stepIndex) li.classList.add("progress-step-active");
+        });
+      }
+
+      if (batchForm) {
+        batchForm.addEventListener("submit", function() {
+          overlay.style.display = "flex";
+          setStep(0);
+          if (intervalId) clearInterval(intervalId);
+          intervalId = setInterval(function() {
+            if (currentStep >= steps.length - 1) return;
+            setStep(currentStep + 1);
+          }, 4500);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
+

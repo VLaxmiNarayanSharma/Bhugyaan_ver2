@@ -1,0 +1,95 @@
+{
+  "location": "Nagpur",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2023-01-01",
+  "total_pixels": 115248,
+  "no_change_pixels": 109382,
+  "no_change_percent": 94.91010689990281,
+  "urban_expansion_pixels": 244,
+  "urban_expansion_area_km2": 1.7721068879032898e-11,
+  "urban_expansion_percent": 0.2117173399972234,
+  "vegetation_loss_pixels": 2,
+  "vegetation_loss_area_km2": 1.4525466294289262e-13,
+  "vegetation_loss_percent": 0.001735388032764126,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 2662,
+      "percent": 2.3098014716090516
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 1531,
+      "percent": 1.3284395390809385
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 925,
+      "percent": 0.8026169651534083
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 216,
+      "percent": 0.1874219075385256
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 205,
+      "percent": 0.17787727335832293
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 118,
+      "percent": 0.10238789393308344
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 77,
+      "percent": 0.06681243926141886
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 49,
+      "percent": 0.04251700680272109
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 38,
+      "percent": 0.0329723726225184
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 27,
+      "percent": 0.0234277384423157
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 14,
+      "percent": 0.012147716229348883
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 2,
+      "percent": 0.001735388032764126
+    },
+    {
+      "from": "Vegetation",
+      "to": "Agricultural",
+      "pixels": 2,
+      "percent": 0.001735388032764126
+    }
+  ]
+}

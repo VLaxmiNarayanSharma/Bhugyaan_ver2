@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classification History - Bhugyaan API</title>
+  <style>
+    body {
+      background-color: #003366;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 { margin: 10px 0; }
+    a {
+      color: #7ec8ff;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .nav { margin-bottom: 24px; font-size: 16px; }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .history-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .history-card .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #b3d7ff;
+    }
+    .history-card .meta strong { color: #fff; }
+    .history-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      display: block;
+      margin-top: 8px;
+    }
+    .history-card .download-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 14px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .history-card .download-link:hover { background-color: #0056b3; }
+    .empty-msg {
+      text-align: center;
+      color: #b3d7ff;
+      padding: 40px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">← Back to Home</a>
+  </div>
+  <h1>Classification History</h1>
+  <p>All LULC classifications done so far.</p>
+
+  <div class="history-list">
+    {% if history %}
+      {% for item in history %}
+      <div class="history-card">
+        <div class="meta">
+          <span><strong>File:</strong> {{ item.get('file_name', '') }}</span>
+          <span><strong>Location:</strong> {{ item.get('location', '') }}</span>
+          <span><strong>Method:</strong> {{ item.get('method', '') }}</span>
+          <span><strong>Date:</strong> {{ item.get('timestamp', '')[:10] }}</span>
+          {% if item.get('center_lat') is not none and item.get('center_lon') is not none %}
+          <span><strong>Center:</strong> {{ item.center_lat }}°N, {{ item.center_lon }}°E</span>
+          {% endif %}
+        </div>
+        <img src="/static/{{ item.get('image_url', '') }}" alt="Classified map" />
+        <a href="/static/{{ item.get('classified_tiff_url', '') }}" class="download-link" download>Download Classified TIFF</a>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-msg">
+        No classifications yet. Run a classification on the <a href="/">home page</a> to see results here.
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+class,area_km2,percent,pixels
+BarrenLand,10.7082,53.65,11898
+Agricultural,4.4541,22.32,4949
+BuiltUp,3.6711,18.39,4079
+Vegetation,0.7083,3.55,787
+Water,0.4167,2.09,463

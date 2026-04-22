@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bhugyaan API</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-geoman-free/dist/leaflet-geoman.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <script src="https://unpkg.com/leaflet-geoman-free/dist/leaflet-geoman.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      background-color: #003366;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      margin: 10px;
+    }
+    #map {
+      width: 100%;
+      height: 600px;
+      margin-top: 20px;
+    }
+    .form-container {
+      margin: 20px auto;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      color: black;
+    }
+    .centered-form {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .download-button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    .download-button:hover {
+      background-color: #0056b3;
+    }
+    #areaDisplay {
+      margin-top: 10px;
+      font-size: 20px;
+      color: white;
+    }
+    .location-search {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 15px auto;
+      max-width: 500px;
+    }
+    .location-search input {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 16px;
+      border: 2px solid #007bff;
+      border-radius: 6px;
+      outline: none;
+    }
+    .location-search input:focus {
+      border-color: #0056b3;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    .location-search button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .location-search button:hover {
+      background-color: #0056b3;
+    }
+    .location-search button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    .search-hint {
+      font-size: 13px;
+      color: #b3d7ff;
+      margin-top: 4px;
+    }
+    .classified-result-wrapper {
+      max-width: 1400px;
+      margin: 24px auto 40px auto;
+      display: grid;
+      grid-template-columns: minmax(0, 3.5fr) minmax(0, 1.5fr);
+      gap: 20px;
+      align-items: flex-start;
+    }
+    @media (max-width: 960px) {
+      .classified-result-wrapper {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .classified-image-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      color: #111;
+    }
+    .classified-image-panel h2 {
+      color: #111;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .classified-image-container {
+      margin-top: 8px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .classified-image-container img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+    .lulc-legend {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      font-size: 13px;
+    }
+    .lulc-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lulc-legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+    .lulc-legend-water { background:#2196f3; }
+    .lulc-legend-built { background:#f44336; }
+    .lulc-legend-veg { background:#2e7d32; }
+    .lulc-legend-agri { background:#ffeb3b; }
+    .lulc-legend-barren { background:#8d6e63; }
+    .result-side-panel {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .result-side-section {
+      margin-bottom: 16px;
+    }
+    .result-side-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #f5f5f5;
+    }
+    .result-side-section p,
+    .result-side-section span {
+      font-size: 13px;
+      color: #e0f0ff;
+    }
+    .aoi-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px 12px;
+      font-size: 13px;
+    }
+    .aoi-meta-label {
+      font-weight: bold;
+      color: #ffffff;
+    }
+    .aoi-meta-value {
+      color: #b3d7ff;
+    }
+    .chart-container {
+      margin-top: 4px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 8px;
+      padding: 8px;
+    }
+    #lulcPieChart {
+      max-height: 260px;
+    }
+    .progress-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .progress-card {
+      width: 90%;
+      max-width: 420px;
+      background: #ffffff;
+      color: #111;
+      border-radius: 10px;
+      padding: 18px 18px 14px 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .progress-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+    .progress-bar-track {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #e0e0e0;
+      overflow: hidden;
+      margin: 6px 0 10px 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg,#007bff,#00c9ff);
+      transition: width 0.4s ease;
+    }
+    .progress-steps {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 13px;
+    }
+    .progress-steps li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      color: #555;
+    }
+    .progress-step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #c4c4c4;
+    }
+    .progress-step-active .progress-step-dot {
+      background: #007bff;
+    }
+    .progress-step-active span {
+      font-weight: 600;
+      color: #111;
+    }
+    .progress-step-done .progress-step-dot {
+      background: #28a745;
+    }
+    .progress-step-done span {
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bhugyaan API</h1>
+  <p class="credits" style="margin: 4px 0 16px 0; font-size: 15px; color: #b3d7ff; font-style: italic;">
+    Built by <strong style="color: #fff;">V Laxmi Narayan Sharma</strong> and <strong style="color: #fff;">Dr Dhiroj Kumar Behra</strong>
+  </p>
+  <nav style="margin-bottom: 16px;">
+    <a href="/history" style="color: #b3d7ff; text-decoration: none; font-size: 16px;">View classification history</a>
+    <span style="margin: 0 10px; color:#b3d7ff;">|</span>
+    <a href="/change-detection" style="color: #b3d7ff; text-decoration: none; font-size: 16px;">LULC change detection</a>
+    <span style="margin: 0 10px; color:#b3d7ff;">|</span>
+    <a href="/time-series" style="color: #b3d7ff; text-decoration: none; font-size: 16px;">Long-term Time-Series</a>
+    <span style="margin: 0 10px; color:#b3d7ff;">|</span>
+    <a href="/batch" style="color: #b3d7ff; text-decoration: none; font-size: 16px;">Batch classification</a>
+  </nav>
+
+  <div class="gee-connect-bar" style="max-width: 1100px; margin: 10px auto 14px auto; padding: 12px 14px; background: rgba(255,255,255,0.08); border-radius: 10px; text-align:left; color:white;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <h2 style="margin:0 0 10px 0; font-size:16px;">GEE Connect (Earth Engine + Drive)</h2>
+      <button id="geeHelpBtn" type="button" title="How to authorize?" style="margin-bottom:10px; width:24px; height:24px; border-radius:50%; border:none; background:#0d6efd; color:#fff; font-weight:bold; cursor:pointer;">?</button>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+      <div style="flex:1; min-width:260px;">
+        <label style="font-weight:bold;" for="geeProjectId">Earth Engine / GCP project ID</label>
+        <input type="text" id="geeProjectId" placeholder="e.g. ee-laxminarayan090503" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid #ccc; margin-top:6px;" />
+      </div>
+      <div style="flex:1; min-width:260px;">
+        <label style="font-weight:bold;" for="geeServiceAccountJson">Service account JSON</label>
+        <input type="file" id="geeServiceAccountJson" accept=".json" style="width:100%; padding:10px 0; margin-top:6px;" />
+      </div>
+      <div style="min-width:160px;">
+        <button id="geeConnectBtn" type="button" style="padding:10px 14px; background-color:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; width:100%;">Authorize & Connect</button>
+      </div>
+    </div>
+    <div id="geeConnectStatus" style="margin-top:10px; font-size:13px; color:#b3d7ff;"></div>
+    <div style="margin-top:6px; font-size:12px; color:#e0f0ff;">
+      Provide a service account JSON with Earth Engine + Drive permissions for exports.
+    </div>
+  </div>
+
+  <div id="geeHelpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10000; align-items:center; justify-content:center;">
+    <div style="width:min(920px, 94vw); max-height:88vh; overflow:auto; background:#fff; color:#111; border-radius:10px; padding:18px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <h3 style="margin:0;">Service Account Authorization Guide (Recommended)</h3>
+        <button id="geeHelpCloseBtn" type="button" style="border:none; background:#dc3545; color:#fff; border-radius:6px; padding:6px 10px; cursor:pointer;">Close</button>
+      </div>
+      <ol style="margin-top:12px; line-height:1.45;">
+        <li><strong>Create service account:</strong> Google Cloud Console → IAM & Admin → Service Accounts → Create Service Account. Use project <code>ee-laxminarayan090503</code>, name <code>bhugyaan-api</code>, assign role <code>Owner</code> (initial setup).</li>
+        <li><strong>Download JSON key:</strong> Open the service account → Keys → Add key → Create new key → JSON.</li>
+        <li><strong>Enable APIs:</strong> APIs & Services → Library → enable <strong>Earth Engine API</strong> and <strong>Cloud Storage API</strong>.</li>
+        <li><strong>Grant Earth Engine access:</strong> In Earth Engine Code Editor Assets settings, add service account email like <code>bhugyaan-api@ee-laxminarayan090503.iam.gserviceaccount.com</code>.</li>
+        <li><strong>Remove old local credentials (important):</strong> delete <code>C:\Users\sharm\.config\earthengine\credentials</code> to avoid conflicts.</li>
+        <li><strong>Use this UI:</strong> Enter Project ID, upload downloaded JSON, click <strong>Authorize & Connect</strong>.</li>
+        <li><strong>Restart server:</strong> <code>uvicorn main:app --reload --port 1200</code>.</li>
+      </ol>
+      <p style="margin:0; font-size:13px; color:#444;">After setup, test <code>/lulc-timeseries</code>, <code>/download</code>, and <code>/generate-lulc</code>.</p>
+    </div>
+  </div>
+  <img src="/static/images/NRSC-logo.jpg" alt="NRSC Logo" class="logo" style="max-width:150px; margin-bottom:10px;">
+  <p class="tagline" style="margin: 8px auto 10px auto; font-size: 18px; color: #fff; max-width: 800px;">
+    <strong>BhuGyaan API:</strong> <span style="font-size: 20px;">भूमेः रहस्यानि उद्घाटयामः</span><br>
+    <em style="font-size: 14px; color: #b3d7ff;">Unveiling the secrets of the Earth</em>
+  </p>
+  <img src="/static/images/Bhugyaan-Logo.jpg" alt="Bhugyaan Logo" class="logo" style="max-width:150px; margin-bottom:20px;">
+
+  <!-- Location Search (zoom to place like Google Maps) -->
+  <div class="location-search">
+    <input type="text" id="locationSearch" placeholder="Search for a place (e.g. Mumbai, New York, Delhi)" autocomplete="off" />
+    <button type="button" id="locationSearchBtn">Go to location</button>
+  </div>
+  <div class="search-hint">Enter a city, landmark, or address to zoom the map to that location.</div>
+
+  <!-- Map Display -->
+  <div id="map"></div>
+  <div id="areaDisplay"></div>
+
+  <!-- ROI TIFF Download Section (for drawn ROI) -->
+  <h2>Download ROI TIFF</h2>
+  <label for="roiFileName">Enter File Name for ROI:</label>
+  <input type="text" id="roiFileName" placeholder="Enter file name" />
+  <label for="roiDate" style="margin-left: 15px;">Date for image (YYYY-MM-DD):</label>
+  <input type="date" id="roiDate" />
+  <button id="downloadROI">Download ROI TIFF</button>
+  <p class="search-hint" style="margin-top: 6px;">TIFF is downloaded for your chosen date from Sentinel-2. If no data exists, you will see "Invalid date".</p>
+
+  <!-- GeoJSON/Shapefile Upload Section -->
+  <div class="form-container">
+    <h2>Upload GeoJSON or Shapefile(Upload in Zip format)</h2>
+    <!-- Accept now includes .geojson, .zip, and .shp -->
+    <input type="file" id="file-input" accept=".geojson, .zip, .shp" required />
+    <br/><br/>
+    <button type="button" id="upload-btn">Upload & Display</button>
+    <br/><br/>
+    <label for="uploadedRegionDate">Date for TIFF (YYYY-MM-DD):</label>
+    <input type="date" id="uploadedRegionDate" style="margin: 6px 0;" />
+    <br/>
+    <button type="button" id="download-tiff-btn">Download TIFF from Uploaded Region</button>
+  </div>
+
+  <!-- Automated LULC Generation (AOI -> GEE -> Classify) -->
+  <div class="centered-form">
+    <div class="form-container">
+      <h2 style="color: black; text-align: center;">Automated LULC (No TIFF Upload)</h2>
+      <form id="generateLulcForm" action="/generate-lulc" method="post" style="display:flex; flex-direction: column; gap: 10px;">
+        <label style="font-weight:bold;" for="genLocation">Location name (used for naming/display):</label>
+        <input type="text" id="genLocation" name="location_name" placeholder="e.g. Secunderabad" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <label style="font-weight:bold;" for="genDate">Date for Sentinel-2 (YYYY-MM-DD):</label>
+        <input type="date" id="genDate" name="date" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <label style="font-weight:bold;" for="genSource">Data source</label>
+        <select id="genSource" name="data_source" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+          <option value="sentinel2">Sentinel-2</option>
+          <option value="landsat9">Landsat-9</option>
+          <option value="sentinel1">Sentinel-1 SAR</option>
+          <option value="planet">Planet (requires local API setup)</option>
+        </select>
+
+        <label style="font-weight:bold;" for="genMethod">Select Classification Method:</label>
+        <select id="genMethod" name="method" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+          <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+          <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+          <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+          <option value="Random-Forest-Random-search">Random Forest (Random Search)</option>
+          <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+          <option value="ANN">Artificial Neural Network</option>
+        </select>
+
+        <label style="font-weight:bold;" for="genScale">Scale (meters per pixel):</label>
+        <input type="number" id="genScale" name="scale" value="30" min="10" max="1000" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <input type="hidden" id="genGeojson" name="geojson" />
+
+        <button type="submit" style="padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+          Generate LULC from AOI
+        </button>
+        <p style="margin: 0; color:#333; font-size: 13px;">
+          Tip: draw an ROI on the map or upload GeoJSON/Shapefile first. This will fetch Sentinel‑2 automatically and classify it.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Class Probability Maps (AOI -> GEE -> Probabilities) -->
+  <div class="centered-form">
+    <div class="form-container">
+      <h2 style="color: black; text-align: center;">Class Probability Maps</h2>
+      <form id="probabilityMapsForm" action="/probability-maps" method="post" style="display:flex; flex-direction: column; gap: 10px;">
+        <label style="font-weight:bold;" for="probLocation">Location name</label>
+        <input type="text" id="probLocation" name="location_name" placeholder="e.g. Secunderabad" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <label style="font-weight:bold;" for="probDate">Date for Sentinel-2 (YYYY-MM-DD)</label>
+        <input type="date" id="probDate" name="date" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <label style="font-weight:bold;" for="probMethod">Classification method</label>
+        <select id="probMethod" name="method" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+          <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+          <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+          <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+          <option value="Random-Forest-Random-search">Random Forest (Random Search)</option>
+          <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+          <option value="ANN">Artificial Neural Network</option>
+        </select>
+
+        <label style="font-weight:bold;" for="probScale">Scale (meters per pixel)</label>
+        <input type="number" id="probScale" name="scale" value="30" min="10" max="1000" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <input type="hidden" id="probGeojson" name="geojson" />
+
+        <button type="submit" style="padding: 10px; background-color: #6f42c1; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+          Generate probability maps
+        </button>
+        <p style="margin:0; color:#333; font-size:13px;">
+          Uses model softmax / predict_proba outputs to create per-class probability maps (Water, BuiltUp, Vegetation, BarrenLand, Agricultural).
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- LULC Classification Form -->
+  <div class="centered-form">
+    <div class="form-container">
+        <h1 style="color: black; text-align: center;">LULC Classification</h1>
+        <form action="/classify/" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+            
+            <label for="file" style="font-weight: bold;">Upload TIFF File:</label>
+            <input type="file" name="file" accept=".tif" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+
+            <label for="method" style="font-weight: bold;">Select Classification Method:</label>
+            <select name="method" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+                <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+                <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+                <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+                <option value="Random-Forest-Random-search">Random Forest (Random Search)</option>
+                <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+                <option value="ANN">Artificial Neural Network</option>
+            </select>
+
+            <input type="submit" value="Classify Image" style="padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+        </form>
+    </div>
+</div>
+
+
+  <!-- Display Classified Results if Available -->
+  {% if image_url %}
+  <div class="classified-result-wrapper">
+    <div class="classified-image-panel">
+      <h2>Classified Land Cover Map</h2>
+      <p style="margin: 0 0 6px 0; font-size: 13px; color:#444;">
+        RGB | FCC (8,4,3) | LULC classification
+      </p>
+      <div class="classified-image-container">
+        <img src="/static/{{ image_url }}" alt="Classified Map">
+      </div>
+      <div class="lulc-legend">
+        <div class="lulc-legend-item">
+          <span class="lulc-legend-color lulc-legend-water"></span><span>Water (Blue)</span>
+        </div>
+        <div class="lulc-legend-item">
+          <span class="lulc-legend-color lulc-legend-built"></span><span>Built-up (Red)</span>
+        </div>
+        <div class="lulc-legend-item">
+          <span class="lulc-legend-color lulc-legend-veg"></span><span>Vegetation (Green)</span>
+        </div>
+        <div class="lulc-legend-item">
+          <span class="lulc-legend-color lulc-legend-agri"></span><span>Agriculture (Yellow)</span>
+        </div>
+        <div class="lulc-legend-item">
+          <span class="lulc-legend-color lulc-legend-barren"></span><span>Barren (Brown)</span>
+        </div>
+      </div>
+    </div>
+    <div class="result-side-panel">
+      <div class="result-side-section">
+        <h3>AOI summary</h3>
+        <div class="aoi-meta-grid">
+          <div>
+            <div class="aoi-meta-label">File</div>
+            <div class="aoi-meta-value">{{ file_name }}</div>
+          </div>
+          <div>
+            <div class="aoi-meta-label">Location</div>
+            <div class="aoi-meta-value">{{ location_from_file }}</div>
+          </div>
+          {% if center_lat is not none and center_lon is not none %}
+          <div>
+            <div class="aoi-meta-label">Center Lat</div>
+            <div class="aoi-meta-value">{{ center_lat }}°</div>
+          </div>
+          <div>
+            <div class="aoi-meta-label">Center Lon</div>
+            <div class="aoi-meta-value">{{ center_lon }}°</div>
+          </div>
+          {% endif %}
+          <div>
+            <div class="aoi-meta-label">Method</div>
+            <div class="aoi-meta-value">{{ method }}</div>
+          </div>
+          {% if aoi_area_km2 is not none %}
+          <div>
+            <div class="aoi-meta-label">AOI area</div>
+            <div class="aoi-meta-value">{{ "%.2f"|format(aoi_area_km2) }} km²</div>
+          </div>
+          {% endif %}
+          {% if aoi_date %}
+          <div>
+            <div class="aoi-meta-label">Date</div>
+            <div class="aoi-meta-value">{{ aoi_date }}</div>
+          </div>
+          {% endif %}
+          {% if aoi_data_source %}
+          <div>
+            <div class="aoi-meta-label">Satellite</div>
+            <div class="aoi-meta-value">{{ aoi_data_source }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if classified_tiff_url %}
+        <a href="/static/{{ classified_tiff_url }}" class="download-button" style="margin-top:10px; display:inline-block;">Download Classified TIFF</a>
+        {% endif %}
+      </div>
+      {% if class_stats %}
+      <div class="result-side-section">
+        <h3>LULC breakdown</h3>
+        <div class="chart-container">
+          <canvas id="lulcPieChart"></canvas>
+        </div>
+      </div>
+      {% endif %}
+      {% if class_stats %}
+      <div class="result-side-section">
+        <h3>Spatial statistics</h3>
+        <table style="width:100%; border-collapse:collapse; margin-top:4px; font-size:13px;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.3);">Class</th>
+              <th style="text-align:right; padding:6px; border-bottom:1px solid rgba(255,255,255,0.3);">Area (km²)</th>
+              <th style="text-align:right; padding:6px; border-bottom:1px solid rgba(255,255,255,0.3);">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in class_stats %}
+            <tr>
+              <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.15);">{{ s.class }}</td>
+              <td style="padding:6px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.15);">{{ "%.2f"|format(s.area_km2) }}</td>
+              <td style="padding:6px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.15);">{{ "%.2f"|format(s.percent) }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if class_stats_csv_url %}
+        <a href="/static/{{ class_stats_csv_url }}" class="download-button" download style="margin-top:10px; display:inline-block;">
+          Download spatial statistics CSV
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if prob_maps %}
+  <div class="results" style="max-width: 1000px; margin: 24px auto; padding: 10px;">
+    <h2>Class Probability Maps ({{ prob_location }} – {{ prob_date }})</h2>
+    <p>Method: {{ prob_method }}</p>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center;">
+      {% for p in prob_maps %}
+      <div style="flex:1 1 280px; background:rgba(255,255,255,0.08); border-radius:8px; padding:10px;">
+        <h3 style="margin-top:0;">{{ p.class }} probability</h3>
+        <img src="/static/{{ p.png }}" alt="{{ p.class }} probability map" style="max-width:100%; height:auto; border-radius:6px;">
+        <br/>
+        <a href="/static/{{ p.tif }}" class="download-button" download>Download {{ p.class }} probability GeoTIFF</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Long-running job progress overlay -->
+  <div id="progressOverlay" class="progress-overlay">
+    <div class="progress-card">
+      <h3>Running classification…</h3>
+      <div class="progress-bar-track">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+      <ul class="progress-steps">
+        <li class="progress-step progress-step-active" data-step="0">
+          <span class="progress-step-dot"></span><span>Downloading satellite image</span>
+        </li>
+        <li class="progress-step" data-step="1">
+          <span class="progress-step-dot"></span><span>Processing bands</span>
+        </li>
+        <li class="progress-step" data-step="2">
+          <span class="progress-step-dot"></span><span>Running model</span>
+        </li>
+        <li class="progress-step" data-step="3">
+          <span class="progress-step-dot"></span><span>Generating output</span>
+        </li>
+      </ul>
+      <p style="margin-top:8px; font-size:12px; color:#666;">
+        Large AOIs can take a few minutes. This window will close automatically when results are ready.
+      </p>
+    </div>
+  </div>
+
+  <!-- JavaScript: Map, Drawing, ROI, and File Upload Functionality -->
+  <script>
+    // Global variable to store uploaded GeoJSON (from file upload)
+    var uploadedGeoJSON = null;
+    // Marker for location search result (so we can remove it on new search)
+    var locationSearchMarker = null;
+
+    // ---------- Location search (geocode and zoom like Google Maps) ----------
+    function goToLocation() {
+      var query = document.getElementById("locationSearch").value.trim();
+      if (!query) {
+        alert("Please enter a location name.");
+        return;
+      }
+      var btn = document.getElementById("locationSearchBtn");
+      btn.disabled = true;
+      btn.textContent = "Searching...";
+      // Nominatim (OpenStreetMap) geocoding - free, no API key
+      var url = "https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(query) + "&format=json&limit=1";
+      fetch(url, { headers: { "Accept": "application/json", "User-Agent": "Bhugyaan-LULC-App/1.0" } })
+        .then(function(res) { return res.json(); })
+        .then(function(results) {
+          btn.disabled = false;
+          btn.textContent = "Go to location";
+          if (!results || results.length === 0) {
+            alert("Location not found. Try a different name or spelling.");
+            return;
+          }
+          var r = results[0];
+          var lat = parseFloat(r.lat);
+          var lon = parseFloat(r.lon);
+          if (locationSearchMarker) {
+            map.removeLayer(locationSearchMarker);
+          }
+          locationSearchMarker = L.marker([lat, lon]).addTo(map);
+          map.flyTo([lat, lon], 14, { duration: 0.8 });
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          btn.textContent = "Go to location";
+          alert("Search failed: " + (err.message || "Please try again."));
+        });
+    }
+    document.getElementById("locationSearchBtn").addEventListener("click", goToLocation);
+    document.getElementById("locationSearch").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") goToLocation();
+    });
+
+    // Initialize map and base layers
+    var drawnItems = new L.FeatureGroup();
+    var map = L.map('map').setView([20, 77], 5);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 18
+    });
+    osmLayer.addTo(map);
+    var baseMaps = { "OpenStreetMap": osmLayer, "Satellite": satelliteLayer };
+    L.control.layers(baseMaps).addTo(map);
+    map.addLayer(drawnItems);
+
+    // Draw control for ROI (drawn by user)
+    var drawControl = new L.Control.Draw({
+      edit: { featureGroup: drawnItems },
+      draw: { polygon: true, marker: false, polyline: false, rectangle: true, circle: true, circlemarker: true }
+    });
+    map.addControl(drawControl);
+
+    // When user draws an ROI, clear previous layers, add the new one, and calculate area.
+    map.on(L.Draw.Event.CREATED, function(e) {
+      drawnItems.clearLayers();
+      drawnItems.addLayer(e.layer);
+      var geo = e.layer.toGeoJSON();
+      var area = turf.area(geo) / 1e6;
+      document.getElementById("areaDisplay").textContent = "Area of drawn polygon: " + area.toFixed(2) + " km²";
+      // Optionally store this ROI as well:
+      uploadedGeoJSON = geo;
+    });
+
+    // Automated LULC form: attach current AOI GeoJSON before submit
+    document.getElementById("generateLulcForm").addEventListener("submit", function(e) {
+      var layers = drawnItems.getLayers();
+      var aoiGeo = null;
+      if (layers.length > 0) {
+        aoiGeo = layers[0].toGeoJSON();
+      } else if (uploadedGeoJSON) {
+        aoiGeo = uploadedGeoJSON;
+      }
+      if (!aoiGeo) {
+        e.preventDefault();
+        alert("Please draw an ROI on the map or upload a GeoJSON/Shapefile first.");
+        return;
+      }
+      document.getElementById("genGeojson").value = JSON.stringify(aoiGeo);
+    });
+
+    // Probability maps form: attach current AOI GeoJSON before submit
+    document.getElementById("probabilityMapsForm").addEventListener("submit", function(e) {
+      var layers = drawnItems.getLayers();
+      var aoiGeo = null;
+      if (layers.length > 0) {
+        aoiGeo = layers[0].toGeoJSON();
+      } else if (uploadedGeoJSON) {
+        aoiGeo = uploadedGeoJSON;
+      }
+      if (!aoiGeo) {
+        e.preventDefault();
+        alert("Please draw an ROI on the map or upload a GeoJSON/Shapefile first.");
+        return;
+      }
+      document.getElementById("probGeojson").value = JSON.stringify(aoiGeo);
+    });
+
+    async function pollDownloadTask(taskId) {
+      var maxTries = 180; // 15 min @ 5s
+      for (var i = 0; i < maxTries; i++) {
+        var r = await fetch("/download-task-status/" + encodeURIComponent(taskId));
+        var s = await r.json();
+        if (!r.ok) {
+          throw new Error(s.detail || "Could not read download task status.");
+        }
+        if (s.state === "READY" && s.download_url) {
+          return s.download_url;
+        }
+        if (s.state === "FAILED" || s.state === "CANCELLED") {
+          throw new Error(s.error || "Export failed.");
+        }
+        await new Promise(function(resolve) { setTimeout(resolve, 5000); });
+      }
+      throw new Error("Export is taking too long. Please try again.");
+    }
+
+    // ROI TIFF Download Button (for drawn ROI)
+    document.getElementById("downloadROI").addEventListener("click", function() {
+      var fileName = document.getElementById("roiFileName").value;
+      var date = document.getElementById("roiDate").value;
+      if (!fileName) {
+        alert("Please enter a file name.");
+        return;
+      }
+      if (!date) {
+        alert("Please select a date for the image.");
+        return;
+      }
+      var layers = drawnItems.getLayers();
+      if (layers.length === 0) {
+        alert("No ROI drawn. Please draw a polygon first.");
+        return;
+      }
+      var coordinates = layers[0].toGeoJSON().geometry.coordinates;
+      var body = "coordinates=" + encodeURIComponent(JSON.stringify(coordinates)) + "&file_name=" + encodeURIComponent(fileName) + "&date=" + encodeURIComponent(date);
+      fetch("/download/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body
+      })
+      .then(function(response) {
+        return response.json().then(function(data) {
+          if (!response.ok) throw new Error(data.detail || "Invalid date.");
+          return data;
+        });
+      })
+      .then(function(data) {
+        if (!data.task_id) {
+          alert("Export started.");
+          return;
+        }
+        alert("Export started. TIFF will open automatically once ready.");
+        pollDownloadTask(data.task_id)
+          .then(function(url) {
+            window.open(url, "_blank");
+          })
+          .catch(function(err) {
+            alert(err.message || String(err));
+          });
+      })
+      .catch(function(err) {
+        alert(err.message || "Error: " + err);
+      });
+    });
+
+    // Handle file upload: for GeoJSON, parse client-side; for .zip or .shp (shapefile), send to backend.
+    document.getElementById("upload-btn").addEventListener("click", function() {
+      var file = document.getElementById("file-input").files[0];
+      if (!file) {
+        alert("Please select a file.");
+        return;
+      }
+      if (file.name.endsWith(".geojson")) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            var geojson = JSON.parse(e.target.result);
+            drawnItems.clearLayers();
+            var layer = L.geoJSON(geojson).addTo(drawnItems);
+            map.fitBounds(layer.getBounds());
+            var area = turf.area(geojson) / 1e6;
+            document.getElementById("areaDisplay").textContent = "Area: " + area.toFixed(2) + " km²";
+            uploadedGeoJSON = geojson;
+            console.log("GeoJSON uploaded and displayed:", geojson);
+          } catch(err) {
+            alert("Error parsing GeoJSON: " + err);
+          }
+        };
+        reader.readAsText(file);
+      } else if (file.name.endsWith(".zip") || file.name.endsWith(".shp")) {
+        var formData = new FormData();
+        formData.append("file", file);
+        fetch("/process_shapefile/", { method: "POST", body: formData })
+          .then(res => res.json())
+          .then(geojson => {
+            if(geojson.error){
+              alert("Error: " + geojson.error);
+              return;
+            }
+            drawnItems.clearLayers();
+            var layer = L.geoJSON(geojson).addTo(drawnItems);
+            map.fitBounds(layer.getBounds());
+            var area = turf.area(geojson) / 1e6;
+            document.getElementById("areaDisplay").textContent = "Area: " + area.toFixed(2) + " km²";
+            uploadedGeoJSON = geojson;
+          })
+          .catch(err => alert("Error processing shapefile: " + err));
+      } else {
+        alert("Unsupported file type. Please upload a .geojson, .zip, or .shp file.");
+      }
+    });
+
+    // Handle TIFF download from the uploaded region: send geojson, file name, and date to backend.
+    document.getElementById("download-tiff-btn").addEventListener("click", function() {
+      if (!uploadedGeoJSON) {
+        alert("No region available. Please draw or upload a region first.");
+        return;
+      }
+      var fileName = prompt("Enter file name for TIFF download (without extension):", "region");
+      if (!fileName || fileName.trim() === "") {
+        alert("File name is required.");
+        return;
+      }
+      var date = document.getElementById("uploadedRegionDate").value;
+      if (!date) {
+        alert("Please select a date for the image.");
+        return;
+      }
+      fetch("/download_tiff_from_upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ geojson: uploadedGeoJSON, file_name: fileName, date: date })
+      })
+      .then(function(response) {
+        return response.json().then(function(data) {
+          if (!response.ok) throw new Error(data.detail || "Invalid date.");
+          return data;
+        });
+      })
+      .then(function(data) {
+        if (!data.task_id) {
+          alert("Export started with file name: " + data.file_name);
+          return;
+        }
+        alert("Export started with file name: " + data.file_name + ". TIFF will open automatically once ready.");
+        pollDownloadTask(data.task_id)
+          .then(function(url) {
+            window.open(url, "_blank");
+          })
+          .catch(function(err) {
+            alert(err.message || String(err));
+          });
+      })
+      .catch(function(err) {
+        alert(err.message || "Error initiating download: " + err);
+      });
+    });
+
+    // ---------- Classification progress indicator ----------
+    (function() {
+      var overlay = document.getElementById("progressOverlay");
+      if (!overlay) return;
+      var bar = document.getElementById("progressBarFill");
+      var steps = Array.prototype.slice.call(document.querySelectorAll(".progress-step"));
+      var currentStep = 0;
+      var intervalId = null;
+
+      function setStep(stepIndex) {
+        currentStep = stepIndex;
+        var pct = Math.min(100, (stepIndex + 1) * (100 / steps.length));
+        if (bar) bar.style.width = pct + "%";
+        steps.forEach(function(li, idx) {
+          li.classList.remove("progress-step-active", "progress-step-done");
+          if (idx < stepIndex) {
+            li.classList.add("progress-step-done");
+          } else if (idx === stepIndex) {
+            li.classList.add("progress-step-active");
+          }
+        });
+      }
+
+      function startProgress() {
+        if (!overlay) return;
+        overlay.style.display = "flex";
+        setStep(0);
+        if (intervalId) clearInterval(intervalId);
+        intervalId = setInterval(function() {
+          if (currentStep >= steps.length - 1) return;
+          setStep(currentStep + 1);
+        }, 4500);
+      }
+
+      function attachProgress(formId) {
+        var form = document.getElementById(formId);
+        if (!form) return;
+        form.addEventListener("submit", function() {
+          startProgress();
+        });
+      }
+
+      attachProgress("generateLulcForm");
+      attachProgress("probabilityMapsForm");
+      // Traditional TIFF upload classification form
+      var lulcForm = document.querySelector('form[action="/classify/"]');
+      if (lulcForm) {
+        lulcForm.addEventListener("submit", function() {
+          startProgress();
+        });
+      }
+    })();
+
+    // ---------- LULC pie chart ----------
+    (function() {
+      var canvas = document.getElementById("lulcPieChart");
+      if (!canvas) return;
+      var ctx = canvas.getContext("2d");
+      var labels = [
+        {% if class_stats %}
+        {% for s in class_stats %}"{{ s.class }}"{% if not loop.last %}, {% endif %}{% endfor %}
+        {% endif %}
+      ];
+      var dataVals = [
+        {% if class_stats %}
+        {% for s in class_stats %}{{ "%.2f"|format(s.percent) }}{% if not loop.last %}, {% endif %}{% endfor %}
+        {% endif %}
+      ];
+      if (!labels.length) return;
+      var colors = labels.map(function(name) {
+        var key = name.toLowerCase();
+        if (key.indexOf("water") !== -1) return "rgba(33,150,243,0.85)";
+        if (key.indexOf("built") !== -1 || key.indexOf("urban") !== -1) return "rgba(244,67,54,0.9)";
+        if (key.indexOf("veg") !== -1 || key.indexOf("forest") !== -1) return "rgba(46,125,50,0.9)";
+        if (key.indexOf("agri") !== -1 || key.indexOf("crop") !== -1) return "rgba(255,235,59,0.9)";
+        if (key.indexOf("barren") !== -1 || key.indexOf("waste") !== -1) return "rgba(141,110,99,0.9)";
+        return "rgba(158,158,158,0.9)";
+      });
+      new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataVals,
+            backgroundColor: colors,
+            borderColor: "#ffffff",
+            borderWidth: 1,
+          }]
+        },
+        options: {
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { boxWidth: 14 }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  var v = ctx.parsed || 0;
+                  return ctx.label + ": " + v.toFixed(2) + "%";
+                }
+              }
+            },
+          }
+        }
+      });
+    })();
+
+    // -------------------------------
+    // GEE Connect (service account)
+    // -------------------------------
+    (function() {
+      var btn = document.getElementById("geeConnectBtn");
+      if (!btn) return;
+
+      btn.addEventListener("click", async function() {
+        var projectId = document.getElementById("geeProjectId").value.trim();
+        var fileInput = document.getElementById("geeServiceAccountJson");
+        var file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        var status = document.getElementById("geeConnectStatus");
+
+        if (!projectId) {
+          alert("Enter your Earth Engine / GCP project ID.");
+          return;
+        }
+        if (!file) {
+          alert("Upload your service account JSON file (.json).");
+          return;
+        }
+
+        if (status) status.textContent = "Authorizing & connecting...";
+
+        try {
+          var fd = new FormData();
+          fd.append("project_id", projectId);
+          fd.append("service_account_json", file);
+
+          var resp = await fetch("/gee-connect", { method: "POST", body: fd });
+          var data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || "GEE connect failed");
+
+          if (status) status.textContent = "Connected to: " + data.project_id;
+        } catch (err) {
+          if (status) status.textContent = "";
+          alert(err.message || String(err));
+        }
+      });
+    })();
+
+    // GEE Help modal
+    (function() {
+      var openBtn = document.getElementById("geeHelpBtn");
+      var modal = document.getElementById("geeHelpModal");
+      var closeBtn = document.getElementById("geeHelpCloseBtn");
+      if (!openBtn || !modal || !closeBtn) return;
+      openBtn.addEventListener("click", function() {
+        modal.style.display = "flex";
+      });
+      closeBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+      });
+      modal.addEventListener("click", function(e) {
+        if (e.target === modal) modal.style.display = "none";
+      });
+    })();
+  </script>
+</body>
+</html>

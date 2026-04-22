@@ -1,0 +1,71 @@
+{
+  "location": "Achampet",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2019-01-01",
+  "date2": "2020-01-01",
+  "total_pixels": 34138,
+  "no_change_pixels": 26043,
+  "no_change_percent": 76.28742164157244,
+  "urban_expansion_pixels": 717,
+  "urban_expansion_area_km2": 0.6453,
+  "urban_expansion_percent": 2.100298787275177,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 5114,
+      "percent": 14.980373777022672
+    },
+    {
+      "from": "BuiltUp",
+      "to": "Agricultural",
+      "pixels": 1148,
+      "percent": 3.3628214892495167
+    },
+    {
+      "from": "BuiltUp",
+      "to": "BarrenLand",
+      "pixels": 696,
+      "percent": 2.038783760032808
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 663,
+      "percent": 1.9421172886519422
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 120,
+      "percent": 0.3515144413849669
+    },
+    {
+      "from": "BuiltUp",
+      "to": "Vegetation",
+      "pixels": 113,
+      "percent": 0.3310094323041772
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 107,
+      "percent": 0.31343371023492883
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 80,
+      "percent": 0.23434296092331128
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 54,
+      "percent": 0.1581814986232351
+    }
+  ]
+}

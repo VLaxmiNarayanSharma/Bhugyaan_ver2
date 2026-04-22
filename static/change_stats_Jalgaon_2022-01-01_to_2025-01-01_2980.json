@@ -1,0 +1,83 @@
+{
+  "location": "Jalgaon",
+  "method": "Support-Vector-Machine-Grid-Search",
+  "date1": "2022-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 208692,
+  "no_change_pixels": 176163,
+  "no_change_percent": 84.4129147260077,
+  "urban_expansion_pixels": 3176,
+  "urban_expansion_area_km2": 2.8584,
+  "urban_expansion_percent": 1.5218599658827363,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 16097,
+      "percent": 7.713280815747609
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 12415,
+      "percent": 5.9489582734364514
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 3003,
+      "percent": 1.4389626818469323
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 500,
+      "percent": 0.23958752611504033
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 254,
+      "percent": 0.1217104632664405
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 97,
+      "percent": 0.04647998006631783
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 76,
+      "percent": 0.036417303969486135
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 55,
+      "percent": 0.026354627872654437
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 27,
+      "percent": 0.012937726410212179
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 3,
+      "percent": 0.001437525156690242
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 2,
+      "percent": 0.0009583501044601614
+    }
+  ]
+}

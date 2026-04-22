@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LULC Time-Series - Bhugyaan API</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <style>
+    body { background-color:#003366; color:white; font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
+    h1, h2 { margin: 12px 0; }
+    .nav { margin: 14px 0; }
+    .nav a { color:#b3d7ff; text-decoration:none; font-size:16px; }
+    .nav a:hover { text-decoration: underline; }
+    #map { width:100%; height:520px; margin-top: 8px; }
+    .form-container { margin: 18px auto; padding: 15px; background: #f9f9f9; border-radius:8px; width: 90%; max-width: 620px; color:black; text-align:left; }
+    label { font-weight:bold; }
+    input, select { width:100%; padding: 8px; border-radius:5px; border:1px solid #ccc; margin-top: 6px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { padding: 10px; background-color:#28a745; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; width:100%; margin-top: 12px; }
+    .btn:hover { background-color:#1e7e34; }
+    .error { max-width: 900px; margin: 15px auto; background: rgba(255,0,0,0.12); border:1px solid rgba(255,0,0,0.35); padding:10px 12px; border-radius: 8px; text-align:left; color:#fff; }
+    .results { max-width: 1100px; margin: 18px auto; padding: 10px; }
+    .results img { max-width:100%; height:auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background:#fff; }
+    .slider-wrap { margin: 12px auto; max-width: 820px; background: rgba(0,0,0,0.15); border-radius: 10px; padding: 12px; text-align:left; }
+    #yearSlider { width:100%; }
+    #yearLabel { color:#b3d7ff; font-weight: bold; }
+    .chart-wrap { margin-top: 12px; background: rgba(0,0,0,0.15); border-radius: 10px; padding: 12px; }
+    .progress-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index: 9999; }
+    .progress-card { width: 90%; max-width: 460px; background:#ffffff; color:#111; border-radius: 10px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); text-align:left; }
+    .progress-card h3 { margin: 0 0 10px 0; font-size: 18px; }
+    .progress-bar-track { width:100%; height:8px; border-radius:999px; background:#e0e0e0; overflow:hidden; margin:6px 0 10px 0; }
+    .progress-bar-fill { height:100%; width:0%; background: linear-gradient(90deg,#007bff,#00c9ff); transition: width 0.4s ease; }
+    .progress-steps { list-style:none; padding:0; margin:0; font-size: 13px; }
+    .progress-steps li { display:flex; align-items:center; gap:6px; margin-bottom:4px; color:#555; }
+    .progress-step-dot { width:8px; height:8px; border-radius:999px; background:#c4c4c4; }
+    .progress-step-active .progress-step-dot { background:#007bff; }
+    .progress-step-active span { font-weight:600; color:#111; }
+    .progress-step-done .progress-step-dot { background:#28a745; }
+    .progress-step-done span { color:#2e7d32; }
+  </style>
+</head>
+<body>
+  <h1>LULC Time-Series</h1>
+  <div class="nav">
+    <a href="/">← Back to Home</a>
+    <span style="margin: 0 10px; color:#b3d7ff;">|</span>
+    <a href="/change-detection">LULC change detection</a>
+  </div>
+
+  <div class="location-search" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:10px auto; max-width:500px;">
+    <input type="text" id="locationSearch" placeholder="Search for a place (e.g. Mumbai, Delhi)" style="flex:1; padding:10px 14px; font-size:16px; border:2px solid #007bff; border-radius:6px; color:#333;" />
+    <button type="button" id="locationSearchBtn" style="padding:10px 20px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer;">Go to location</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="form-container">
+    <h2 style="margin-top:0;">Inputs</h2>
+    <form id="tsForm">
+      <div class="row">
+        <div>
+          <label for="start_year">Start year</label>
+          <input id="start_year" name="start_year" type="number" min="2015" required value="2020"/>
+        </div>
+        <div>
+          <label for="end_year">End year</label>
+          <input id="end_year" name="end_year" type="number" min="2015" required value="2025"/>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="interval">Interval</label>
+        <select id="interval" name="interval">
+          <option value="yearly" selected>Yearly (median composite)</option>
+          <option value="quarterly">Quarterly (median composite)</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="method">Classification method</label>
+        <select id="method" name="method">
+          <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+          <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+          <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+          <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+          <option value="Random-Forest-Random-search" selected>Random Forest (Random Search)</option>
+          <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+          <option value="ANN">Artificial Neural Network</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="scale_m">Scale (m per pixel)</label>
+        <input id="scale_m" name="scale_m" type="number" min="10" max="1000" value="30"/>
+      </div>
+
+      <input type="hidden" id="geojson" name="geojson"/>
+
+      <button class="btn" type="submit">Run time-series LULC</button>
+      <p style="margin:10px 0 0 0; font-size:13px; color:#333;">
+        Draw an AOI on the map first (rectangle/polygon), then submit.
+      </p>
+    </form>
+  </div>
+
+  <div id="errorBox" class="error" style="display:none;"></div>
+
+  <div id="results" class="results" style="display:none;">
+    <h2 id="resultTitle">Time-series results</h2>
+    <div class="slider-wrap">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom: 6px;">
+        <div style="font-weight:bold;">Year/Step</div>
+        <div id="yearLabel">-</div>
+      </div>
+      <input type="range" id="yearSlider" min="0" max="0" step="1" value="0"/>
+      <div style="margin-top: 6px; font-size: 13px; color:#d8ecff;">
+        Use the slider to preview each classified map.
+      </div>
+    </div>
+
+    <img id="tsMapImg" alt="Classified map" />
+
+    <div class="chart-wrap">
+      <h3 style="margin-top:0;">Class area over time</h3>
+      <canvas id="tsChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <div id="progressOverlay" class="progress-overlay">
+    <div class="progress-card">
+      <h3>Running time-series…</h3>
+      <div class="progress-bar-track">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+      <ul class="progress-steps">
+        <li class="progress-step progress-step-active" data-step="0"><span class="progress-step-dot"></span><span>Building composites</span></li>
+        <li class="progress-step" data-step="1"><span class="progress-step-dot"></span><span>Exporting</span></li>
+        <li class="progress-step" data-step="2"><span class="progress-step-dot"></span><span>Classifying</span></li>
+        <li class="progress-step" data-step="3"><span class="progress-step-dot"></span><span>Rendering outputs</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    var locationSearchMarker = null;
+    var drawnItems = new L.FeatureGroup();
+    var map = L.map('map').setView([20, 77], 5);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 18
+    });
+    osmLayer.addTo(map);
+    L.control.layers({ "OpenStreetMap": osmLayer, "Satellite": satelliteLayer }).addTo(map);
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+      edit: { featureGroup: drawnItems },
+      draw: { polygon: true, marker: false, polyline: false, rectangle: true, circle: false, circlemarker: false }
+    });
+    map.addControl(drawControl);
+
+    map.on(L.Draw.Event.CREATED, function(e) {
+      drawnItems.clearLayers();
+      drawnItems.addLayer(e.layer);
+    });
+
+    function goToLocation() {
+      var q = document.getElementById("locationSearch").value.trim();
+      if (!q) { alert("Enter a location."); return; }
+      var btn = document.getElementById("locationSearchBtn");
+      btn.disabled = true;
+      btn.textContent = "Searching...";
+      fetch("https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(q) + "&format=json&limit=1", {
+        headers: { "Accept": "application/json", "User-Agent": "Bhugyaan-LULC-App/1.0" }
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(results) {
+          btn.disabled = false;
+          btn.textContent = "Go to location";
+          if (!results || results.length === 0) { alert("Location not found."); return; }
+          var lat = parseFloat(results[0].lat), lon = parseFloat(results[0].lon);
+          if (locationSearchMarker) map.removeLayer(locationSearchMarker);
+          locationSearchMarker = L.marker([lat, lon]).addTo(map);
+          map.flyTo([lat, lon], 14, { duration: 0.8 });
+        })
+        .catch(function() { btn.disabled = false; btn.textContent = "Go to location"; alert("Search failed."); });
+    }
+    document.getElementById("locationSearchBtn").addEventListener("click", goToLocation);
+    document.getElementById("locationSearch").addEventListener("keydown", function(e) { if (e.key === "Enter") goToLocation(); });
+
+    function getAOIGeojson() {
+      var layers = drawnItems.getLayers();
+      if (!layers || layers.length === 0) return null;
+      return layers[0].toGeoJSON();
+    }
+
+    function startOverlay() {
+      var overlay = document.getElementById("progressOverlay");
+      if (!overlay) return;
+      overlay.style.display = "flex";
+      var bar = document.getElementById("progressBarFill");
+      var steps = Array.prototype.slice.call(document.querySelectorAll(".progress-steps .progress-step"));
+      var currentStep = 0;
+      if (window.__ts_intervalId) clearInterval(window.__ts_intervalId);
+      bar.style.width = "0%";
+      steps.forEach(function(li, idx){ li.classList.remove("progress-step-active","progress-step-done"); if (idx === 0) li.classList.add("progress-step-active"); });
+      window.__ts_intervalId = setInterval(function(){
+        currentStep = Math.min(steps.length - 1, currentStep + 1);
+        steps.forEach(function(li, idx){
+          li.classList.remove("progress-step-active","progress-step-done");
+          if (idx < currentStep) li.classList.add("progress-step-done");
+          else if (idx === currentStep) li.classList.add("progress-step-active");
+        });
+        if (currentStep >= steps.length - 1) clearInterval(window.__ts_intervalId);
+      }, 4500);
+    }
+
+    function stopOverlay() {
+      var overlay = document.getElementById("progressOverlay");
+      if (!overlay) return;
+      overlay.style.display = "none";
+      if (window.__ts_intervalId) clearInterval(window.__ts_intervalId);
+    }
+
+    var chart = null;
+    document.getElementById("tsForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      var geo = getAOIGeojson();
+      if (!geo) {
+        alert("Please draw an AOI on the map first.");
+        return;
+      }
+
+      var start_year = parseInt(document.getElementById("start_year").value, 10);
+      var end_year = parseInt(document.getElementById("end_year").value, 10);
+      var interval = document.getElementById("interval").value;
+      var method = document.getElementById("method").value;
+      var scale_m = parseInt(document.getElementById("scale_m").value, 10);
+
+      startOverlay();
+
+      try {
+        var resp = await fetch("/lulc-timeseries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ aoi: geo, start_year, end_year, interval, method, scale_m })
+        });
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Time-series failed");
+
+        stopOverlay();
+        if (data.error) throw new Error(data.error);
+
+        var years = data.years;
+        var maps = data.maps;
+        var stats = data.stats;
+
+        document.getElementById("results").style.display = "block";
+        document.getElementById("resultTitle").textContent = "Time-series results (" + start_year + " → " + end_year + ")";
+
+        var slider = document.getElementById("yearSlider");
+        slider.max = String(Math.max(0, years.length - 1));
+        slider.value = "0";
+
+        var yearLabel = document.getElementById("yearLabel");
+        yearLabel.textContent = String(years[0]);
+
+        var img = document.getElementById("tsMapImg");
+        img.src = maps[0];
+
+        slider.oninput = function() {
+          var idx = parseInt(slider.value, 10);
+          yearLabel.textContent = String(years[idx]);
+          img.src = maps[idx];
+        };
+
+        var classes = ["urban","vegetation","water","barren","agricultural"];
+        var colors = {
+          urban: "rgba(244,67,54,1)",
+          vegetation: "rgba(46,125,50,1)",
+          water: "rgba(33,150,243,1)",
+          barren: "rgba(141,110,99,1)",
+          agricultural: "rgba(255,235,59,1)"
+        };
+        var ctx = document.getElementById("tsChart").getContext("2d");
+        if (chart) chart.destroy();
+
+        var datasets = classes.map(function(c){
+          return {
+            label: c,
+            data: years.map(function(y){
+              var key = String(y);
+              return (stats[key] && stats[key][c] != null) ? stats[key][c] : 0;
+            }),
+            borderColor: colors[c] || "rgba(255,255,255,1)",
+            backgroundColor: colors[c] ? colors[c].replace("1)", "0.2)") : "rgba(255,255,255,0.2)",
+            tension: 0.2
+          };
+        });
+
+        chart = new Chart(ctx, {
+          type: "line",
+          data: { labels: years, datasets },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } },
+            scales: {
+              y: { title: { display: true, text: "Area (km²)" } }
+            }
+          }
+        });
+      } catch (err) {
+        stopOverlay();
+        var box = document.getElementById("errorBox");
+        box.style.display = "block";
+        box.textContent = err.message || String(err);
+      }
+    });
+  </script>
+</body>
+</html>
+

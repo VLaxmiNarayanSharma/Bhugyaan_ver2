@@ -1,0 +1,65 @@
+{
+  "location": "Karimnagar",
+  "method": "Random-Forest-Random-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 25578,
+  "no_change_pixels": 23716,
+  "no_change_percent": 92.72030651340997,
+  "urban_expansion_pixels": 295,
+  "urban_expansion_area_km2": 0.2655,
+  "urban_expansion_percent": 1.1533348971772617,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 662,
+      "percent": 2.588161701462194
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 602,
+      "percent": 2.353585112205802
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 159,
+      "percent": 0.6216279615294393
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 155,
+      "percent": 0.6059895222456799
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 136,
+      "percent": 0.5317069356478223
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 94,
+      "percent": 0.3675033231683478
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 30,
+      "percent": 0.11728829462819611
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 24,
+      "percent": 0.09383063570255688
+    }
+  ]
+}

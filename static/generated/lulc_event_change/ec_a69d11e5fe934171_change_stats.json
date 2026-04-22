@@ -1,0 +1,9 @@
+{
+  "change_stats": {
+    "water_to_urban": 1.2884088603034576e-09,
+    "water_to_barren": 2.786710708559395e-10,
+    "barren_to_urban": 1.935518383714044e-10,
+    "agricultural_to_urban": 4.986592578829504e-10,
+    "agricultural_to_barren": 5.670015767975813e-10
+  }
+}

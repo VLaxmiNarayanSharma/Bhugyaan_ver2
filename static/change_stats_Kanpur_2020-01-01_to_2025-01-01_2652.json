@@ -1,0 +1,53 @@
+{
+  "location": "Kanpur",
+  "method": "Support-Vector-Machine-Grid-Search",
+  "date1": "2020-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 225584,
+  "no_change_pixels": 205649,
+  "no_change_percent": 91.16293708773672,
+  "urban_expansion_pixels": 19894,
+  "urban_expansion_area_km2": 17.9046,
+  "urban_expansion_percent": 8.818887864387545,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 15981,
+      "percent": 7.084279026881339
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 3493,
+      "percent": 1.5484254202425705
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 420,
+      "percent": 0.18618341726363571
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 27,
+      "percent": 0.01196893396694801
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 13,
+      "percent": 0.005762820058160153
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 1,
+      "percent": 0.0004432938506277041
+    }
+  ]
+}

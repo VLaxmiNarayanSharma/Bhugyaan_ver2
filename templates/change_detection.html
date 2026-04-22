@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LULC Change Detection - Bhugyaan API</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <style>
+    body { background-color: #003366; color: white; font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
+    h1, h2 { margin: 10px; }
+    #map { width: 100%; height: 520px; margin-top: 10px; }
+    .nav { margin: 14px 0; }
+    .nav a { color: #b3d7ff; text-decoration: none; font-size: 16px; }
+    .nav a:hover { text-decoration: underline; }
+    .form-container { margin: 18px auto; padding: 15px; background: #f9f9f9; border-radius: 8px; width: 90%; max-width: 520px; color: black; text-align: left; }
+    label { font-weight: bold; }
+    input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; }
+    .btn:hover { background-color: #1e7e34; }
+    .error { max-width: 800px; margin: 15px auto; background: rgba(255,0,0,0.12); border: 1px solid rgba(255,0,0,0.35); padding: 10px 12px; border-radius: 8px; }
+    .results { max-width: 980px; margin: 18px auto; padding: 10px; }
+    .results img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); }
+    .download-link { display: inline-block; margin: 10px 8px 0 8px; padding: 9px 14px; background-color: #007bff; color: white; border-radius: 6px; text-decoration: none; }
+    .download-link:hover { background-color: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; }
+    th { background: rgba(255,255,255,0.12); }
+    .progress-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .progress-card { width: 90%; max-width: 420px; background: #ffffff; color: #111; border-radius: 10px; padding: 18px 18px 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); text-align:left;}
+    .progress-card h3 { margin: 0 0 10px 0; font-size: 18px; }
+    .progress-bar-track { width: 100%; height: 8px; border-radius: 999px; background: #e0e0e0; overflow: hidden; margin: 6px 0 10px 0; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#007bff,#00c9ff); transition: width 0.4s ease; }
+    .progress-steps { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+    .progress-steps li { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #555; }
+    .progress-step-dot { width: 8px; height: 8px; border-radius: 999px; background: #c4c4c4; }
+    .progress-step-active .progress-step-dot { background: #007bff; }
+    .progress-step-active span { font-weight: 600; color: #111; }
+    .progress-step-done .progress-step-dot { background: #28a745; }
+    .progress-step-done span { color: #2e7d32; }
+
+    /* Event-mode BEFORE/AFTER swipe */
+    #swipeContainer {
+      position: relative;
+      width: 100%;
+      max-width: 980px;
+      height: 420px;
+      margin: 10px auto;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: #000;
+    }
+    #swipeContainer img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    #afterClip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      overflow: hidden;
+      width: 50%;
+      z-index: 2;
+    }
+    #afterClip img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #swipeDivider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 3;
+      pointer-events: none;
+    }
+    #swipeSlider {
+      width: 100%;
+      max-width: 980px;
+      margin: 8px auto 2px auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>LULC Change Detection</h1>
+  <div class="nav"><a href="/">← Back to Home</a></div>
+
+  <div class="location-search" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:10px auto; max-width:500px;">
+    <input type="text" id="locationSearch" placeholder="Search for a place (e.g. Mumbai, Delhi)" style="flex:1; padding:10px 14px; font-size:16px; border:2px solid #007bff; border-radius:6px;" />
+    <button type="button" id="locationSearchBtn" style="padding:10px 20px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer;">Go to location</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="form-container">
+    <h2 style="margin-top:0;">Inputs</h2>
+    <form id="changeForm" action="/lulc-change" method="post">
+      <label for="location_name">Location name</label>
+      <input id="location_name" name="location_name" placeholder="e.g. Secunderabad" required />
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label for="date1">Date 1 (YYYY-MM-DD)</label>
+          <input id="date1" name="date1" type="date" required />
+        </div>
+        <div>
+          <label for="date2">Date 2 (YYYY-MM-DD)</label>
+          <input id="date2" name="date2" type="date" required />
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="source">Data source</label>
+        <select id="source" name="source">
+          <option value="sentinel2">Sentinel-2</option>
+          <option value="landsat9">Landsat-9</option>
+          <option value="sentinel1">Sentinel-1 SAR</option>
+          <option value="planet">Planet (requires local API setup)</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="method">Classification method</label>
+        <select id="method" name="method">
+          <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+          <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+          <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+          <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+          <option value="Random-Forest-Random-search">Random Forest (Random Search)</option>
+          <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+          <option value="ANN">Artificial Neural Network</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="scale">Scale (meters per pixel)</label>
+        <input id="scale" name="scale" type="number" value="30" min="10" max="1000" />
+      </div>
+
+      <input type="hidden" id="geojson" name="geojson" />
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">Run change detection</button>
+      </div>
+      <p style="margin:10px 0 0 0; font-size:13px; color:#333;">
+        Draw an AOI on the map first (rectangle/polygon), then submit.
+      </p>
+    </form>
+
+    <hr style="border:none; border-top:1px solid rgba(0,0,0,0.12); margin: 18px 0;">
+
+    <h2 style="margin-top:0;">Disaster/Event Change Detection</h2>
+    <form id="eventForm" onsubmit="return false;">
+      <label for="event_date" style="font-weight:bold;">Event date (YYYY-MM-DD)</label>
+      <input id="event_date" type="date" required />
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label for="window_days">Window days (e.g., 7 or 15)</label>
+          <input id="window_days" type="number" min="1" max="60" value="7" />
+        </div>
+        <div>
+          <label for="event_scale">Scale (meters per pixel)</label>
+          <input id="event_scale" type="number" min="10" max="1000" value="30" />
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="event_method">Classification method</label>
+        <select id="event_method">
+          <option value="Support-Vector-Machine-Grid-Search">SVM (Grid Search)</option>
+          <option value="Support-Vector-Machine-Random-Search">SVM (Random Search)</option>
+          <option value="Support-Vector-Machine-Bayes-Search">SVM (Bayes Search)</option>
+          <option value="Random-Forest-Grid-search">Random Forest (Grid Search)</option>
+          <option value="Random-Forest-Random-search" selected>Random Forest (Random Search)</option>
+          <option value="Random-Forest-Bayesian-Search">Random Forest (Bayes Search)</option>
+          <option value="ANN">Artificial Neural Network</option>
+        </select>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn" id="runEventBtn" type="button">Run event change detection</button>
+      </div>
+
+      <p style="margin:10px 0 0 0; font-size:13px; color:#333;">
+        Built-up loss (BuiltUp -> other) is hidden in the event change map and transition list.
+      </p>
+    </form>
+  </div>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if change_png_url %}
+  <div class="results">
+    <h2>Results: {{ location_name }} ({{ date1 }} → {{ date2 }})</h2>
+    <p><strong>Method:</strong> {{ method }}</p>
+    {% if change_stats %}
+    <p>
+      <strong>Urban expansion:</strong>
+      {{ "%.2f"|format(change_stats.urban_expansion_area_km2) }} km² ({{ "%.2f"|format(change_stats.urban_expansion_percent) }}%)
+      &nbsp;&nbsp;
+      <strong>Vegetation loss:</strong>
+      {{ "%.2f"|format(change_stats.vegetation_loss_area_km2) }} km² ({{ "%.2f"|format(change_stats.vegetation_loss_percent) }}%)
+    </p>
+    {% endif %}
+
+    {% if class_png1_url and class_png2_url %}
+    <h3>Classified images for each date</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-bottom:10px;">
+      <div style="flex:1 1 300px;">
+        <p><strong>{{ date1 }}</strong></p>
+        <img src="/static/{{ class_png1_url }}" alt="Classified {{ date1 }}" />
+        {% if class_tif1_url %}
+        <a class="download-link" href="/static/{{ class_tif1_url }}" download>Download classified TIFF ({{ date1 }})</a>
+        {% endif %}
+      </div>
+      <div style="flex:1 1 300px;">
+        <p><strong>{{ date2 }}</strong></p>
+        <img src="/static/{{ class_png2_url }}" alt="Classified {{ date2 }}" />
+        {% if class_tif2_url %}
+        <a class="download-link" href="/static/{{ class_tif2_url }}" download>Download classified TIFF ({{ date2 }})</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <h3>Change map (red = change)</h3>
+    <img src="/static/{{ change_png_url }}" alt="Change map" />
+    <div>
+      <a class="download-link" href="/static/{{ change_tif_url }}" download>Download change_map.tif</a>
+      <a class="download-link" href="/static/{{ change_stats_url }}" download>Download change_stats.json</a>
+    </div>
+
+    {% if change_stats and change_stats.transitions %}
+    <h2 style="margin-top:18px;">Top transitions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>From</th>
+          <th>To</th>
+          <th>Pixels</th>
+          <th>Percent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in change_stats.transitions[:15] %}
+        <tr>
+          <td>{{ t.from }}</td>
+          <td>{{ t.to }}</td>
+          <td>{{ t.pixels }}</td>
+          <td>{{ "%.2f"|format(t.percent) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Event-mode results -->
+  <div id="eventResults" class="results" style="display:none;">
+    <h2>Event Change Detection Results</h2>
+    <div id="eventMeta" style="margin-bottom:10px; font-size:13px; color:#b3d7ff;"></div>
+
+    <h3>BEFORE / AFTER swipe (classified)</h3>
+    <div id="swipeContainer">
+      <img id="beforeImg" alt="Before event" />
+      <div id="afterClip"><img id="afterImg" alt="After event" /></div>
+      <div id="swipeDivider"></div>
+    </div>
+    <input id="swipeSlider" type="range" min="0" max="100" value="50" />
+
+    <h3>Change map (red = allowed change)</h3>
+    <img id="changeImg" alt="Change map" />
+
+    <h3 style="margin-top:18px;">Top transitions (excluding BuiltUp → other)</h3>
+    <table style="margin-top:10px;">
+      <thead>
+        <tr>
+          <th>From</th>
+          <th>To</th>
+          <th>Area (km²)</th>
+        </tr>
+      </thead>
+      <tbody id="eventTransitionsTbody"></tbody>
+    </table>
+
+    <div id="dailySeriesBlock" style="display:none; margin-top:22px;">
+      <h3>Daily Event Series (± window days)</h3>
+      <div style="max-width:980px; margin:8px auto; text-align:left;">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px;">
+          <div style="font-weight:bold;">Selected date</div>
+          <div id="dailyDateLabel" style="color:#b3d7ff; font-weight:bold;">-</div>
+        </div>
+        <input id="dailySlider" type="range" min="0" max="0" step="1" value="0" style="width:100%;" />
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center;">
+        <div style="flex:1 1 420px;">
+          <h4>Classified map</h4>
+          <img id="dailyClassMapImg" alt="Daily classified map" />
+        </div>
+        <div style="flex:1 1 420px;">
+          <h4>Transition map (from previous day)</h4>
+          <img id="dailyTransitionMapImg" alt="Daily transition map" />
+        </div>
+      </div>
+      <h4 style="margin-top:14px;">Transition summary (selected day)</h4>
+      <table style="margin-top:10px;">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Area (km²)</th>
+          </tr>
+        </thead>
+        <tbody id="dailyTransitionsTbody"></tbody>
+      </table>
+      <div id="dailySeriesNote" style="margin-top:8px; font-size:13px; color:#b3d7ff;"></div>
+    </div>
+  </div>
+
+  <!-- Progress overlay reused for long change detection runs -->
+  <div id="progressOverlay" class="progress-overlay">
+    <div class="progress-card">
+      <h3>Running change detection…</h3>
+      <div class="progress-bar-track">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+      <ul class="progress-steps">
+        <li class="progress-step progress-step-active" data-step="0">
+          <span class="progress-step-dot"></span><span>Downloading satellite images</span>
+        </li>
+        <li class="progress-step" data-step="1">
+          <span class="progress-step-dot"></span><span>Processing bands</span>
+        </li>
+        <li class="progress-step" data-step="2">
+          <span class="progress-step-dot"></span><span>Running models</span>
+        </li>
+        <li class="progress-step" data-step="3">
+          <span class="progress-step-dot"></span><span>Generating change maps</span>
+        </li>
+      </ul>
+      <p style="margin-top:8px; font-size:12px; color:#666;">
+        Large AOIs and long time spans may take a few minutes. The overlay will close when results load.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    var locationSearchMarker = null;
+    var map = L.map('map').setView([20, 77], 5);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 18
+    });
+    osmLayer.addTo(map);
+    L.control.layers({ "OpenStreetMap": osmLayer, "Satellite": satelliteLayer }).addTo(map);
+
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+      edit: { featureGroup: drawnItems },
+      draw: { polygon: true, marker: false, polyline: false, rectangle: true, circle: false, circlemarker: false }
+    });
+    map.addControl(drawControl);
+
+    map.on(L.Draw.Event.CREATED, function(e) {
+      drawnItems.clearLayers();
+      drawnItems.addLayer(e.layer);
+    });
+
+    function goToLocation() {
+      var q = document.getElementById("locationSearch").value.trim();
+      if (!q) { alert("Enter a location."); return; }
+      var btn = document.getElementById("locationSearchBtn");
+      btn.disabled = true;
+      btn.textContent = "Searching...";
+      fetch("https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(q) + "&format=json&limit=1", {
+        headers: { "Accept": "application/json", "User-Agent": "Bhugyaan-LULC-App/1.0" }
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(results) {
+          btn.disabled = false;
+          btn.textContent = "Go to location";
+          if (!results || results.length === 0) { alert("Location not found."); return; }
+          var lat = parseFloat(results[0].lat), lon = parseFloat(results[0].lon);
+          if (locationSearchMarker) map.removeLayer(locationSearchMarker);
+          locationSearchMarker = L.marker([lat, lon]).addTo(map);
+          map.flyTo([lat, lon], 14, { duration: 0.8 });
+        })
+        .catch(function() { btn.disabled = false; btn.textContent = "Go to location"; alert("Search failed."); });
+    }
+    document.getElementById("locationSearchBtn").addEventListener("click", goToLocation);
+    document.getElementById("locationSearch").addEventListener("keydown", function(e) { if (e.key === "Enter") goToLocation(); });
+
+    document.getElementById("changeForm").addEventListener("submit", function(e) {
+      var layers = drawnItems.getLayers();
+      if (!layers || layers.length === 0) {
+        e.preventDefault();
+        alert("Please draw an AOI on the map first.");
+        return;
+      }
+      var geo = layers[0].toGeoJSON();
+      document.getElementById("geojson").value = JSON.stringify(geo);
+    });
+
+    // Progress overlay for change detection
+    (function() {
+      var overlay = document.getElementById("progressOverlay");
+      if (!overlay) return;
+      var bar = document.getElementById("progressBarFill");
+      var steps = Array.prototype.slice.call(document.querySelectorAll(".progress-steps .progress-step"));
+      var currentStep = 0;
+      var intervalId = null;
+
+      function setStep(stepIndex) {
+        currentStep = stepIndex;
+        var pct = Math.min(100, (stepIndex + 1) * (100 / steps.length));
+        if (bar) bar.style.width = pct + "%";
+        steps.forEach(function(li, idx) {
+          li.classList.remove("progress-step-active", "progress-step-done");
+          if (idx < stepIndex) li.classList.add("progress-step-done");
+          else if (idx === stepIndex) li.classList.add("progress-step-active");
+        });
+      }
+
+      var form = document.getElementById("changeForm");
+      if (form) {
+        form.addEventListener("submit", function() {
+          overlay.style.display = "flex";
+          setStep(0);
+          if (intervalId) clearInterval(intervalId);
+          intervalId = setInterval(function() {
+            if (currentStep >= steps.length - 1) return;
+            setStep(currentStep + 1);
+          }, 4500);
+        });
+      }
+
+      // Also show progress overlay for the event-mode AJAX call.
+      var eventBtn = document.getElementById("runEventBtn");
+      if (eventBtn) {
+        eventBtn.addEventListener("click", function() {
+          overlay.style.display = "flex";
+          setStep(0);
+          if (intervalId) clearInterval(intervalId);
+          intervalId = setInterval(function() {
+            if (currentStep >= steps.length - 1) return;
+            setStep(currentStep + 1);
+          }, 4500);
+        });
+      }
+    })();
+
+    // -------------------------------
+    // Event-mode AJAX + swipe UI
+    // -------------------------------
+    (function() {
+      var runBtn = document.getElementById("runEventBtn");
+      if (!runBtn) return;
+
+      async function parseErrorResponse(resp) {
+        var text = await resp.text();
+        try {
+          return JSON.parse(text);
+        } catch (_e) {
+          return { error: text || ("HTTP " + resp.status) };
+        }
+      }
+
+      function mapEventErrorMessage(msg, payload) {
+        var raw = String(msg || "");
+        if (
+          raw.indexOf("No Sentinel-2 data available") !== -1 ||
+          raw.indexOf("Image.multiply: If one image has no bands") !== -1
+        ) {
+          var before = payload && payload.before_window ? payload.before_window : null;
+          var after = payload && payload.after_window ? payload.after_window : null;
+          var windowInfo = "";
+          if (before && after) {
+            windowInfo =
+              " (before: " + before.start + " to " + before.end + ", after: " + after.start + " to " + after.end + ")";
+          }
+          return (
+            "No Sentinel-2 data for BEFORE/AFTER window. Try larger window_days or lower cloud strictness." +
+            windowInfo
+          );
+        }
+        return raw || "Event change detection failed.";
+      }
+
+      function getAOIGeojson() {
+        var layers = drawnItems.getLayers();
+        if (!layers || layers.length === 0) return null;
+        return layers[0].toGeoJSON();
+      }
+
+      function setSwipePosition(pct) {
+        var afterClip = document.getElementById("afterClip");
+        var divider = document.getElementById("swipeDivider");
+        if (afterClip) afterClip.style.width = pct + "%";
+        if (divider) divider.style.left = pct + "%";
+      }
+
+      function titleCaseWord(s) {
+        return s ? (s.charAt(0).toUpperCase() + s.slice(1)) : s;
+      }
+
+      function renderTransitionTable(tbody, statsObj) {
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        var entries = Object.entries(statsObj || {}).sort(function(a, b) { return b[1] - a[1]; });
+        if (!entries.length) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = "<td colspan='3'>No visible transitions for this step.</td>";
+          tbody.appendChild(tr);
+          return;
+        }
+        entries.slice(0, 15).forEach(function(item) {
+          var key = item[0];
+          var area = item[1];
+          var parts = key.split("_to_");
+          var from = parts[0] ? titleCaseWord(parts[0]) : key;
+          var to = parts[1] ? titleCaseWord(parts[1]) : "";
+          var tr = document.createElement("tr");
+          tr.innerHTML = "<td>" + from + "</td><td>" + to + "</td><td>" + Number(area).toFixed(2) + "</td>";
+          tbody.appendChild(tr);
+        });
+      }
+
+      runBtn.addEventListener("click", async function() {
+        var geo = getAOIGeojson();
+        if (!geo) {
+          alert("Please draw an AOI on the map first.");
+          return;
+        }
+
+        var event_date = document.getElementById("event_date").value;
+        var window_days = parseInt(document.getElementById("window_days").value, 10);
+        var method = document.getElementById("event_method").value;
+        var scale_m = parseInt(document.getElementById("event_scale").value, 10);
+
+        if (!event_date) {
+          alert("Please select event_date.");
+          return;
+        }
+        if (!window_days || window_days <= 0) {
+          alert("Please enter a valid window_days.");
+          return;
+        }
+
+        try {
+          var resp = await fetch("/lulc-event-change", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ aoi: geo, event_date, window_days, method, scale_m })
+          });
+          var data = null;
+          if (!resp.ok) {
+            var errPayload = await parseErrorResponse(resp);
+            var errMsg = mapEventErrorMessage(errPayload.detail || errPayload.error, errPayload);
+            throw new Error(errMsg);
+          }
+          data = await resp.json();
+
+          // Hide overlay
+          var overlay = document.getElementById("progressOverlay");
+          if (overlay) overlay.style.display = "none";
+
+          var eventResults = document.getElementById("eventResults");
+          if (eventResults) eventResults.style.display = "block";
+
+          // Meta
+          var meta = document.getElementById("eventMeta");
+          if (meta) meta.textContent = `Event: ${event_date} (±${window_days} days)`;
+
+          // Swipe images
+          var beforeImg = document.getElementById("beforeImg");
+          var afterImg = document.getElementById("afterImg");
+          var changeImg = document.getElementById("changeImg");
+          if (beforeImg) beforeImg.src = data.before_map;
+          if (afterImg) afterImg.src = data.after_map;
+          if (changeImg) changeImg.src = data.change_map;
+
+          setSwipePosition(50);
+          var slider = document.getElementById("swipeSlider");
+          if (slider) {
+            slider.oninput = function() {
+              setSwipePosition(parseInt(slider.value, 10));
+            };
+          }
+
+          // Transitions table
+          var tbody = document.getElementById("eventTransitionsTbody");
+          renderTransitionTable(tbody, data.change_stats || {});
+
+          // Daily series (classified + transition map per day)
+          var dailySeries = data.daily_series || [];
+          var dailyBlock = document.getElementById("dailySeriesBlock");
+          var dailyNote = document.getElementById("dailySeriesNote");
+          if (dailySeries.length > 0 && dailyBlock) {
+            dailyBlock.style.display = "block";
+            var dailySlider = document.getElementById("dailySlider");
+            var dailyDateLabel = document.getElementById("dailyDateLabel");
+            var dailyClassImg = document.getElementById("dailyClassMapImg");
+            var dailyTransImg = document.getElementById("dailyTransitionMapImg");
+            var dailyTbody = document.getElementById("dailyTransitionsTbody");
+            dailySlider.min = "0";
+            dailySlider.max = String(dailySeries.length - 1);
+            dailySlider.value = "0";
+
+            var renderDaily = function(idx) {
+              var item = dailySeries[idx];
+              dailyDateLabel.textContent = item.date || "-";
+              if (dailyClassImg) dailyClassImg.src = item.map || "";
+              if (dailyTransImg) dailyTransImg.src = item.change_map || "";
+              renderTransitionTable(dailyTbody, item.change_stats || {});
+            };
+            renderDaily(0);
+            dailySlider.oninput = function() {
+              renderDaily(parseInt(dailySlider.value, 10));
+            };
+            if (dailyNote) {
+              var skipped = data.skipped_dates || [];
+              dailyNote.textContent = skipped.length
+                ? ("Skipped dates (no nearby data): " + skipped.join(", "))
+                : "All dates in the requested window were processed.";
+            }
+          } else if (dailyBlock) {
+            dailyBlock.style.display = "none";
+          }
+        } catch (err) {
+          var overlay = document.getElementById("progressOverlay");
+          if (overlay) overlay.style.display = "none";
+          alert(err.message || String(err));
+        }
+      });
+    })();
+
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+{
+  "location": "VATSAVAI",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 33292,
+  "no_change_pixels": 26588,
+  "no_change_percent": 79.86303015739517,
+  "urban_expansion_pixels": 432,
+  "urban_expansion_area_km2": 0.3888,
+  "urban_expansion_percent": 1.2976090352036525,
+  "vegetation_loss_pixels": 53,
+  "vegetation_loss_area_km2": 0.0477,
+  "vegetation_loss_percent": 0.1591974047819296,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 2504,
+      "percent": 7.5213264447915416
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 2272,
+      "percent": 6.824462333293284
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 1310,
+      "percent": 3.934879250270335
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 267,
+      "percent": 0.8019944731467019
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 157,
+      "percent": 0.4715847651087348
+    },
+    {
+      "from": "Vegetation",
+      "to": "Agricultural",
+      "pixels": 53,
+      "percent": 0.1591974047819296
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 51,
+      "percent": 0.15318995554487563
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 41,
+      "percent": 0.12315270935960591
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 23,
+      "percent": 0.06908566622612039
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 12,
+      "percent": 0.036044695422323685
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 8,
+      "percent": 0.024029796948215786
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 6,
+      "percent": 0.018022347711161842
+    }
+  ]
+}

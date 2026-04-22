@@ -1,0 +1,101 @@
+{
+  "location": "Jalgaon",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2022-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 462840,
+  "no_change_pixels": 273076,
+  "no_change_percent": 59.000086422953935,
+  "urban_expansion_pixels": 1427,
+  "urban_expansion_area_km2": 1.2843,
+  "urban_expansion_percent": 0.3083138881686976,
+  "vegetation_loss_pixels": 20,
+  "vegetation_loss_area_km2": 0.018,
+  "vegetation_loss_percent": 0.004321147696828277,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 116541,
+      "percent": 25.179543686803214
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 61218,
+      "percent": 13.226600985221674
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 7569,
+      "percent": 1.6353383458646618
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 1263,
+      "percent": 0.27288047705470575
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 1133,
+      "percent": 0.2447930170253219
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 1119,
+      "percent": 0.24176821363754214
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 389,
+      "percent": 0.08404632270331
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 300,
+      "percent": 0.06481721545242417
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 141,
+      "percent": 0.030464091262639357
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 45,
+      "percent": 0.009722582317863625
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 18,
+      "percent": 0.00388903292714545
+    },
+    {
+      "from": "Vegetation",
+      "to": "BarrenLand",
+      "pixels": 12,
+      "percent": 0.0025926886180969665
+    },
+    {
+      "from": "Vegetation",
+      "to": "Agricultural",
+      "pixels": 8,
+      "percent": 0.001728459078731311
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 8,
+      "percent": 0.001728459078731311
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "location": "Bheemgal",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 8750,
+  "no_change_pixels": 8454,
+  "no_change_percent": 96.61714285714285,
+  "urban_expansion_pixels": 59,
+  "urban_expansion_area_km2": 0.0531,
+  "urban_expansion_percent": 0.6742857142857143,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 192,
+      "percent": 2.1942857142857144
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 59,
+      "percent": 0.6742857142857143
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 19,
+      "percent": 0.21714285714285714
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 18,
+      "percent": 0.2057142857142857
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 4,
+      "percent": 0.045714285714285714
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 2,
+      "percent": 0.022857142857142857
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 1,
+      "percent": 0.011428571428571429
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 1,
+      "percent": 0.011428571428571429
+    }
+  ]
+}

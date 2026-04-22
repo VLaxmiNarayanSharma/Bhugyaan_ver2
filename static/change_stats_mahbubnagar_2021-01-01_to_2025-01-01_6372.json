@@ -1,0 +1,65 @@
+{
+  "location": "mahbubnagar",
+  "method": "Random-Forest-Random-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 2145,
+  "no_change_pixels": 1940,
+  "no_change_percent": 90.44289044289044,
+  "urban_expansion_pixels": 81,
+  "urban_expansion_area_km2": 0.07289999999999999,
+  "urban_expansion_percent": 3.7762237762237763,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 95,
+      "percent": 4.428904428904429
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 57,
+      "percent": 2.6573426573426575
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 20,
+      "percent": 0.9324009324009324
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 18,
+      "percent": 0.8391608391608392
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 7,
+      "percent": 0.32634032634032634
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 6,
+      "percent": 0.27972027972027974
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 1,
+      "percent": 0.046620046620046623
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 1,
+      "percent": 0.046620046620046623
+    }
+  ]
+}

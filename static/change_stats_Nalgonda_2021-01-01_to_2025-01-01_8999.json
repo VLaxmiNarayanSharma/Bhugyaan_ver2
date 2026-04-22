@@ -1,0 +1,77 @@
+{
+  "location": "Nalgonda",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 95149,
+  "no_change_pixels": 7195,
+  "no_change_percent": 7.561824086432858,
+  "urban_expansion_pixels": 4816,
+  "urban_expansion_area_km2": 4.3344,
+  "urban_expansion_percent": 5.061535066054294,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 41360,
+      "percent": 43.468664936047674
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 38502,
+      "percent": 40.464954965370104
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 4495,
+      "percent": 4.724169460530326
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 1652,
+      "percent": 1.736224237774438
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 1403,
+      "percent": 1.4745294222745378
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 220,
+      "percent": 0.23121630285131742
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 207,
+      "percent": 0.21755352131919412
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 101,
+      "percent": 0.10614930267265027
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 13,
+      "percent": 0.0136627815321233
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 1,
+      "percent": 0.0010509831947787154
+    }
+  ]
+}

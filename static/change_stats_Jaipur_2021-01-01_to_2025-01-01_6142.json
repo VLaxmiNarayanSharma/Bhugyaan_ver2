@@ -1,0 +1,95 @@
+{
+  "location": "Jaipur",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 104901,
+  "no_change_pixels": 54193,
+  "no_change_percent": 51.661089980076454,
+  "urban_expansion_pixels": 20406,
+  "urban_expansion_area_km2": 18.3654,
+  "urban_expansion_percent": 19.452626762375953,
+  "vegetation_loss_pixels": 7010,
+  "vegetation_loss_area_km2": 6.309,
+  "vegetation_loss_percent": 6.6824911106662475,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 22917,
+      "percent": 21.846312237252267
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 10111,
+      "percent": 9.638611643358976
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 9431,
+      "percent": 8.990381407231581
+    },
+    {
+      "from": "Vegetation",
+      "to": "Agricultural",
+      "pixels": 6048,
+      "percent": 5.765435982497784
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 822,
+      "percent": 0.7835959619069408
+    },
+    {
+      "from": "Vegetation",
+      "to": "BuiltUp",
+      "pixels": 745,
+      "percent": 0.7101934204631033
+    },
+    {
+      "from": "Vegetation",
+      "to": "BarrenLand",
+      "pixels": 217,
+      "percent": 0.2068617077053603
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 161,
+      "percent": 0.15347804120075118
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 119,
+      "percent": 0.11344029132229436
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 89,
+      "percent": 0.08484189855196804
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 40,
+      "percent": 0.03813119036043508
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 5,
+      "percent": 0.004766398795054385
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 3,
+      "percent": 0.0028598392770326306
+    }
+  ]
+}

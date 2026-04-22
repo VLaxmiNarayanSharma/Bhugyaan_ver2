@@ -1,0 +1,41 @@
+{
+  "location": "Bidar",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2020-01-01",
+  "date2": "2021-01-01",
+  "total_pixels": 46944,
+  "no_change_pixels": 39984,
+  "no_change_percent": 85.17382413087934,
+  "urban_expansion_pixels": 4578,
+  "urban_expansion_area_km2": 4.1202,
+  "urban_expansion_percent": 9.752044989775051,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 4072,
+      "percent": 8.67416496250852
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 1625,
+      "percent": 3.461571233810498
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 757,
+      "percent": 1.6125596455351057
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 506,
+      "percent": 1.0778800272665303
+    }
+  ]
+}

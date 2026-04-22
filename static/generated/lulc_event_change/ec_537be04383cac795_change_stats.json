@@ -1,0 +1,17 @@
+{
+  "change_stats": {
+    "water_to_urban": 5.810186517715705e-13,
+    "water_to_vegetation": 9.368925759816573e-12,
+    "water_to_barren": 1.2346646350145872e-12,
+    "water_to_agricultural": 3.362645447127964e-11,
+    "vegetation_to_barren": 3.050347921800745e-12,
+    "vegetation_to_agricultural": 4.212385225343886e-12,
+    "barren_to_water": 5.810186517715705e-13,
+    "barren_to_urban": 3.6313665735723153e-13,
+    "barren_to_agricultural": 7.262733147144631e-13,
+    "agricultural_to_water": 1.0218665538032495e-10,
+    "agricultural_to_urban": 1.0167826406002482e-12,
+    "agricultural_to_vegetation": 1.740877135370568e-10,
+    "agricultural_to_barren": 3.504995016811999e-10
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "location": "warangal",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 6319,
+  "no_change_pixels": 6180,
+  "no_change_percent": 97.80028485519861,
+  "urban_expansion_pixels": 29,
+  "urban_expansion_area_km2": 0.026099999999999998,
+  "urban_expansion_percent": 0.4589333755341035,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 87,
+      "percent": 1.3768001266023104
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 21,
+      "percent": 0.332331065041937
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 13,
+      "percent": 0.20572875454977052
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 12,
+      "percent": 0.18990346573824973
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 4,
+      "percent": 0.06330115524608323
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 2,
+      "percent": 0.03165057762304162
+    }
+  ]
+}

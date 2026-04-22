@@ -1,0 +1,59 @@
+{
+  "location": "Nagpur",
+  "method": "Support-Vector-Machine-Grid-Search",
+  "date1": "2020-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 58788,
+  "no_change_pixels": 56928,
+  "no_change_percent": 96.83608899775464,
+  "urban_expansion_pixels": 1431,
+  "urban_expansion_area_km2": 1.2879,
+  "urban_expansion_percent": 2.4341702388242497,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 1160,
+      "percent": 1.9731918078519426
+    },
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 418,
+      "percent": 0.7110294617949241
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 269,
+      "percent": 0.45757637613118324
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 9,
+      "percent": 0.015309246785058175
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 2,
+      "percent": 0.0034020548411240388
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 1,
+      "percent": 0.0017010274205620194
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 1,
+      "percent": 0.0017010274205620194
+    }
+  ]
+}

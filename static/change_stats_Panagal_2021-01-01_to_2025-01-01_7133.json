@@ -1,0 +1,113 @@
+{
+  "location": "Panagal",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2025-01-01",
+  "total_pixels": 129920,
+  "no_change_pixels": 113156,
+  "no_change_percent": 87.09667487684729,
+  "urban_expansion_pixels": 3935,
+  "urban_expansion_area_km2": 3.5415,
+  "urban_expansion_percent": 3.028786945812808,
+  "vegetation_loss_pixels": 370,
+  "vegetation_loss_area_km2": 0.333,
+  "vegetation_loss_percent": 0.2847906403940887,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 6319,
+      "percent": 4.863762315270936
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 3597,
+      "percent": 2.7686268472906406
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 2690,
+      "percent": 2.0705049261083746
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 1207,
+      "percent": 0.9290332512315271
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 1129,
+      "percent": 0.8689963054187192
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 581,
+      "percent": 0.44719827586206895
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 521,
+      "percent": 0.40101600985221675
+    },
+    {
+      "from": "Vegetation",
+      "to": "Agricultural",
+      "pixels": 226,
+      "percent": 0.17395320197044334
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 146,
+      "percent": 0.11237684729064039
+    },
+    {
+      "from": "Vegetation",
+      "to": "BarrenLand",
+      "pixels": 121,
+      "percent": 0.09313423645320197
+    },
+    {
+      "from": "Water",
+      "to": "BuiltUp",
+      "pixels": 94,
+      "percent": 0.07235221674876847
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Vegetation",
+      "pixels": 93,
+      "percent": 0.07158251231527094
+    },
+    {
+      "from": "Vegetation",
+      "to": "BuiltUp",
+      "pixels": 22,
+      "percent": 0.016933497536945813
+    },
+    {
+      "from": "Water",
+      "to": "Vegetation",
+      "pixels": 15,
+      "percent": 0.011545566502463054
+    },
+    {
+      "from": "Water",
+      "to": "BarrenLand",
+      "pixels": 2,
+      "percent": 0.001539408866995074
+    },
+    {
+      "from": "Vegetation",
+      "to": "Water",
+      "pixels": 1,
+      "percent": 0.000769704433497537
+    }
+  ]
+}

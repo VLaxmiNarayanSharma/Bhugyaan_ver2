@@ -1,0 +1,65 @@
+{
+  "location": "Osman Sagar",
+  "method": "Random-Forest-Grid-search",
+  "date1": "2021-01-01",
+  "date2": "2022-01-01",
+  "total_pixels": 20933,
+  "no_change_pixels": 19324,
+  "no_change_percent": 92.31357187216356,
+  "urban_expansion_pixels": 17,
+  "urban_expansion_area_km2": 0.0153,
+  "urban_expansion_percent": 0.0812114842593035,
+  "vegetation_loss_pixels": 0,
+  "vegetation_loss_area_km2": 0.0,
+  "vegetation_loss_percent": 0.0,
+  "transitions": [
+    {
+      "from": "Agricultural",
+      "to": "BarrenLand",
+      "pixels": 863,
+      "percent": 4.122677112692878
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Agricultural",
+      "pixels": 436,
+      "percent": 2.0828357139444895
+    },
+    {
+      "from": "Agricultural",
+      "to": "Water",
+      "pixels": 246,
+      "percent": 1.1751779486934506
+    },
+    {
+      "from": "Water",
+      "to": "Agricultural",
+      "pixels": 23,
+      "percent": 0.10987436105670473
+    },
+    {
+      "from": "BarrenLand",
+      "to": "Water",
+      "pixels": 15,
+      "percent": 0.07165719199350308
+    },
+    {
+      "from": "BarrenLand",
+      "to": "BuiltUp",
+      "pixels": 14,
+      "percent": 0.06688004586060288
+    },
+    {
+      "from": "Agricultural",
+      "to": "Vegetation",
+      "pixels": 9,
+      "percent": 0.04299431519610185
+    },
+    {
+      "from": "Agricultural",
+      "to": "BuiltUp",
+      "pixels": 3,
+      "percent": 0.014331438398700616
+    }
+  ]
+}

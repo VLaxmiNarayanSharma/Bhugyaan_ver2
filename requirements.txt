@@ -1,0 +1,12 @@
+fastapi==0.95.2
+uvicorn==0.22.0
+geemap==0.18.2
+earthengine-api==0.1.336
+rasterio==1.3.5
+numpy==1.24.2
+pandas==2.0.2
+scikit-learn==1.2.2
+matplotlib==3.7.1
+shapely==2.0.1
+folium==0.14.0
+google-cloud-storage
